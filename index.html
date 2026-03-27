@@ -189,6 +189,44 @@
       margin-top: 14px;
     }
 
+    .file-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .file-item {
+      display: block;
+      padding: 16px 18px;
+      border-radius: 16px;
+      border: 1px solid var(--ubuntu-border);
+      background: #fff;
+      color: inherit;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .file-item:hover {
+      text-decoration: none;
+      transform: translateY(-2px);
+      border-color: #ebb39f;
+      box-shadow: 0 12px 22px rgba(44, 0, 30, 0.08);
+    }
+
+    .file-name {
+      display: block;
+      font-weight: 700;
+      color: var(--ubuntu-aubergine);
+      word-break: break-word;
+    }
+
+    .file-meta {
+      display: block;
+      margin-top: 6px;
+      color: var(--ubuntu-muted);
+      font-size: 14px;
+    }
+
     .button {
       display: inline-flex;
       align-items: center;
@@ -285,6 +323,12 @@
       border-radius: 16px;
     }
 
+    .status {
+      margin-top: 14px;
+      color: var(--ubuntu-muted);
+      font-size: 14px;
+    }
+
     ul, ol {
       margin: 0 0 16px;
       padding-left: 22px;
@@ -377,8 +421,8 @@
     <section id="directory">
       <h2>2. 当前目录</h2>
       <p>
-        当前资源目录路径是 <code>/papers/</code>。下面展示的是一个“目录入口视图”，重点是让你知道内容维护集中在这里，
-        而不是在首页里维护一堆单独卡片。
+        当前资源目录路径是 <code>/papers/</code>。下面这个列表会优先在 GitHub Pages 上尝试读取仓库中的
+        <code>papers/</code> 当前内容，并直接生成可点击链接；如果无法自动读取，就回退到当前内置列表。
       </p>
 
       <div class="terminal">
@@ -389,10 +433,16 @@
           <span class="terminal-title">papers directory</span>
         </div>
         <pre>$ ls papers/
+LongVILA Scaling Long-Context Visual Language Models for Long Videos.html
 LongVILA Scaling Long-Context Visual Language Models for Long Videos.pdf
 PEARL- Personalized Streaming Video Understanding Model.html
-PEARL- Personalized Streaming Video Understanding Model.pdf</pre>
+PEARL- Personalized Streaming Video Understanding Model.pdf
+TurboQuant
+TurboQuant.html</pre>
       </div>
+
+      <div id="papers-list" class="file-list" aria-live="polite"></div>
+      <p id="papers-status" class="status"></p>
 
       <div class="actions">
         <a class="button" href="papers/">进入目录</a>
@@ -453,5 +503,96 @@ PEARL- Personalized Streaming Video Understanding Model.pdf</pre>
   <footer class="container">
     `index.html` is intentionally stable. Keep updating `papers/`, not this page.
   </footer>
+  <script>
+    (function () {
+      const fallbackEntries = [
+        "LongVILA Scaling Long-Context Visual Language Models for Long Videos.html",
+        "LongVILA Scaling Long-Context Visual Language Models for Long Videos.pdf",
+        "PEARL- Personalized Streaming Video Understanding Model.html",
+        "PEARL- Personalized Streaming Video Understanding Model.pdf",
+        "TurboQuant",
+        "TurboQuant.html"
+      ];
+
+      const listEl = document.getElementById("papers-list");
+      const statusEl = document.getElementById("papers-status");
+
+      function classify(name) {
+        if (name.endsWith("/")) return "directory";
+        if (name.toLowerCase().endsWith(".html")) return "html report";
+        if (name.toLowerCase().endsWith(".pdf")) return "pdf";
+        return "file";
+      }
+
+      function entryHref(name) {
+        return "papers/" + encodeURIComponent(name).replace(/%2F/g, "/");
+      }
+
+      function render(entries, sourceLabel) {
+        listEl.innerHTML = "";
+        entries.forEach((name) => {
+          const a = document.createElement("a");
+          a.className = "file-item";
+          a.href = entryHref(name);
+
+          const title = document.createElement("span");
+          title.className = "file-name";
+          title.textContent = name;
+
+          const meta = document.createElement("span");
+          meta.className = "file-meta";
+          meta.textContent = classify(name);
+
+          a.appendChild(title);
+          a.appendChild(meta);
+          listEl.appendChild(a);
+        });
+
+        statusEl.textContent = sourceLabel;
+      }
+
+      function inferGitHubRepo() {
+        const host = window.location.hostname;
+        if (!host.endsWith(".github.io")) {
+          return null;
+        }
+
+        const owner = host.split(".")[0];
+        const segments = window.location.pathname.split("/").filter(Boolean);
+        const repo = segments.length > 0 ? segments[0] : owner + ".github.io";
+        return { owner, repo };
+      }
+
+      async function loadFromGitHub() {
+        const repoInfo = inferGitHubRepo();
+        if (!repoInfo) {
+          render(fallbackEntries, "Showing embedded fallback list.");
+          return;
+        }
+
+        const apiUrl = "https://api.github.com/repos/" + repoInfo.owner + "/" + repoInfo.repo + "/contents/papers";
+        try {
+          const response = await fetch(apiUrl, {
+            headers: { "Accept": "application/vnd.github+json" }
+          });
+
+          if (!response.ok) {
+            throw new Error("GitHub API request failed");
+          }
+
+          const data = await response.json();
+          const names = data
+            .map((item) => item.type === "dir" ? item.name + "/" : item.name)
+            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+          render(names, "Live list loaded from GitHub repository contents.");
+        } catch (error) {
+          render(fallbackEntries, "GitHub listing unavailable, showing embedded fallback list.");
+        }
+      }
+
+      loadFromGitHub();
+    })();
+  </script>
 </body>
 </html>
