@@ -3,596 +3,269 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Marp Paper Hub</title>
+  <title>Papers</title>
   <style>
     :root {
-      --ubuntu-orange: #e95420;
-      --ubuntu-orange-dark: #c34113;
-      --ubuntu-aubergine: #2c001e;
-      --ubuntu-aubergine-soft: #5e2750;
-      --ubuntu-ink: #1b1b1b;
-      --ubuntu-muted: #6b7280;
-      --ubuntu-bg: #f7f7f8;
-      --ubuntu-panel: #ffffff;
-      --ubuntu-border: #e5d9d4;
-      --ubuntu-shadow: 0 18px 40px rgba(44, 0, 30, 0.12);
-      --ubuntu-soft: #fff2ec;
+      --orange: #e95420;
+      --aubergine: #2c001e;
+      --bg: #f7f7f8;
+      --card: #fff;
+      --border: #e5d9d4;
+      --text: #1b1b1b;
+      --muted: #6b7280;
     }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-      background:
-        radial-gradient(circle at top right, rgba(233, 84, 32, 0.08), transparent 28%),
-        linear-gradient(180deg, #fcfbfb 0%, var(--ubuntu-bg) 100%);
-      color: var(--ubuntu-ink);
-      line-height: 1.7;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 17px;
     }
-
-    a {
-      color: var(--ubuntu-orange);
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
     .container {
-      width: min(980px, calc(100vw - 32px));
+      max-width: min(1200px, 100%);
       margin: 0 auto;
+      padding: 32px clamp(16px, 4vw, 40px) 48px;
     }
-
-    header {
-      padding: 44px 0 20px;
-    }
-
-    .hero {
-      background: linear-gradient(135deg, var(--ubuntu-aubergine) 0%, var(--ubuntu-aubergine-soft) 100%);
-      color: #fff;
-      border-radius: 26px;
-      padding: 36px 34px;
-      box-shadow: var(--ubuntu-shadow);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: auto -80px -80px auto;
-      width: 240px;
-      height: 240px;
-      background: radial-gradient(circle, rgba(233, 84, 32, 0.22), transparent 66%);
-      pointer-events: none;
-    }
-
-    .eyebrow {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffd9cb;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
-    h1, h2, h3 {
-      line-height: 1.24;
-      margin: 0 0 14px;
-    }
-
     h1 {
-      margin-top: 16px;
-      font-size: clamp(30px, 4vw, 44px);
-      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+      font-size: 1.75rem;
+      color: var(--aubergine);
     }
-
+    .sub {
+      margin: 0 0 28px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .hint {
+      margin: -12px 0 28px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
     h2 {
-      font-size: 28px;
-      color: var(--ubuntu-aubergine);
+      margin: 36px 0 16px;
+      font-size: 1.2rem;
+      color: var(--aubergine);
+      border-bottom: 2px solid var(--orange);
+      padding-bottom: 6px;
     }
-
-    h3 {
-      font-size: 19px;
-      color: var(--ubuntu-aubergine);
-      margin-top: 26px;
-    }
-
-    p {
-      margin: 0 0 16px;
-    }
-
-    .lead {
-      font-size: 18px;
-      color: rgba(255, 255, 255, 0.92);
-      max-width: 760px;
-    }
-
-    .meta {
-      margin-top: 14px;
-      color: rgba(255, 255, 255, 0.72);
-      font-size: 15px;
-    }
-
-    nav {
-      margin: 24px 0 32px;
-    }
-
-    .toc,
-    section {
-      background: var(--ubuntu-panel);
-      border: 1px solid var(--ubuntu-border);
-      border-radius: 22px;
-      box-shadow: 0 10px 24px rgba(44, 0, 30, 0.06);
-    }
-
-    .toc {
-      padding: 24px 26px;
-    }
-
-    .toc ul {
-      margin: 0;
-      padding-left: 20px;
-      columns: 2;
-      column-gap: 36px;
-    }
-
-    .toc li {
-      margin: 0 0 10px;
-      break-inside: avoid;
-    }
-
-    main {
-      padding-bottom: 48px;
-    }
-
-    section {
-      padding: 28px;
-      margin-bottom: 22px;
-    }
-
-    .grid {
+    .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-      margin-top: 18px;
-    }
-
-    .card {
-      background: linear-gradient(180deg, #fff 0%, #fff8f5 100%);
-      border: 1px solid var(--ubuntu-border);
-      border-radius: 18px;
-      padding: 20px;
-    }
-
-    .card strong {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 16px;
-      color: var(--ubuntu-aubergine);
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .file-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 14px;
-      margin-top: 18px;
     }
-
-    .file-item {
-      display: block;
-      padding: 16px 18px;
-      border-radius: 16px;
-      border: 1px solid var(--ubuntu-border);
-      background: #fff;
-      color: inherit;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    }
-
-    .file-item:hover {
-      text-decoration: none;
-      transform: translateY(-2px);
-      border-color: #ebb39f;
-      box-shadow: 0 12px 22px rgba(44, 0, 30, 0.08);
-    }
-
-    .file-name {
-      display: block;
-      font-weight: 700;
-      color: var(--ubuntu-aubergine);
-      word-break: break-word;
-    }
-
-    .file-meta {
-      display: block;
-      margin-top: 6px;
-      color: var(--ubuntu-muted);
-      font-size: 14px;
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 14px;
+    .card {
       border-radius: 12px;
-      border: 1px solid transparent;
-      background: var(--ubuntu-orange);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: background 0.18s ease, transform 0.18s ease;
+      padding: 14px 16px 16px;
+      border: 1px solid var(--border);
+      border-left-width: 4px;
+      box-shadow: 0 4px 14px rgba(44, 0, 30, 0.07);
+      transition: box-shadow 0.15s ease, transform 0.12s ease;
     }
-
-    .button:hover {
-      background: var(--ubuntu-orange-dark);
-      text-decoration: none;
+    .card:hover {
+      box-shadow: 0 8px 22px rgba(44, 0, 30, 0.11);
       transform: translateY(-1px);
     }
-
-    .button.secondary {
-      background: transparent;
-      color: var(--ubuntu-orange);
-      border-color: #f2b59d;
+    .card-html {
+      background: linear-gradient(145deg, #fff8f3 0%, #fff 55%);
+      border-left-color: var(--orange);
     }
-
-    .button.secondary:hover {
-      background: var(--ubuntu-soft);
+    .card-pdf {
+      background: linear-gradient(145deg, #f4f0fa 0%, #fff 55%);
+      border-left-color: #5c2d91;
     }
-
-    .terminal {
-      margin-top: 18px;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid rgba(44, 0, 30, 0.18);
-      box-shadow: 0 12px 28px rgba(44, 0, 30, 0.08);
+    .card-other {
+      background: var(--card);
+      border-left-color: #8b8b9a;
     }
-
-    .terminal-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 14px;
-      background: #3a2032;
-    }
-
-    .dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      background: #ff6b57;
-    }
-
-    .dot:nth-child(2) {
-      background: #febc2e;
-    }
-
-    .dot:nth-child(3) {
-      background: #28c840;
-    }
-
-    .terminal-title {
-      margin-left: 8px;
-      color: #f1d6e8;
-      font-size: 13px;
-    }
-
-    pre {
-      margin: 0;
-      padding: 18px 20px;
-      background: #300a24;
-      color: #f5f5f5;
-      overflow-x: auto;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 14px;
-      line-height: 1.7;
-      white-space: pre-wrap;
-    }
-
-    code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      background: #f5ebe6;
-      color: #7a2e12;
-      padding: 2px 6px;
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3px 8px;
       border-radius: 6px;
+      margin-bottom: 8px;
     }
-
-    .note {
-      margin-top: 18px;
-      padding: 16px 18px;
-      border-left: 5px solid var(--ubuntu-orange);
-      background: var(--ubuntu-soft);
-      border-radius: 16px;
+    .card-html .badge {
+      background: rgba(233, 84, 32, 0.14);
+      color: #b83f12;
     }
-
-    .status {
-      margin-top: 14px;
-      color: var(--ubuntu-muted);
-      font-size: 14px;
+    .card-pdf .badge {
+      background: rgba(92, 45, 145, 0.12);
+      color: #4a2478;
     }
-
-    ul, ol {
-      margin: 0 0 16px;
-      padding-left: 22px;
+    .card-other .badge {
+      background: rgba(139, 139, 154, 0.15);
+      color: #55556a;
     }
-
-    li {
-      margin-bottom: 10px;
+    .card-title {
+      margin: 0;
+      font-size: 0.98rem;
+      font-weight: 600;
+      line-height: 1.35;
     }
-
-    footer {
-      color: var(--ubuntu-muted);
-      padding: 0 0 42px;
-      font-size: 14px;
+    .card-title a {
+      color: var(--aubergine);
+      text-decoration: none;
+      word-break: break-word;
     }
-
-    @media (max-width: 720px) {
-      .hero,
-      .toc,
-      section {
-        padding: 22px;
-      }
-
-      .toc ul {
-        columns: 1;
-      }
+    .card-html .card-title a { color: #7a2e0d; }
+    .card-pdf .card-title a { color: #3d1f66; }
+    .card-title a:hover { text-decoration: underline; }
+    .card-folder {
+      margin: 8px 0 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .empty { margin: 0; color: var(--muted); }
+    .md-wrap {
+      margin-top: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+    }
+    .md-wrap pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--text);
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <div class="hero">
-        <span class="eyebrow">Ubuntu Style Portal</span>
-        <h1>Marp Paper Hub</h1>
-        <p class="lead">
-          一个稳定、简洁的论文入口页。首页保持固定风格与导航，后续只需要更新 <code>papers/</code> 目录中的 PDF、HTML 报告、
-          tutorial 或 QA 页面即可。
-        </p>
-        <p class="meta">
-          适合 GitHub Pages 部署，首页不承担内容维护，只承担入口与说明。
-        </p>
-      </div>
-    </div>
-  </header>
+  <div class="container">
+    <header>
+      <h1>Papers</h1>
+      <p class="sub"><code>papers/</code> 下全部文件（含子目录）；下方为 <code>read_paper.md</code> 原文。</p>
+      <p class="hint">更新列表请运行：<code>python3 update_index.py</code></p>
+    </header>
 
-  <nav class="container">
-    <div class="toc">
-      <h2>目录</h2>
-      <ul>
-        <li><a href="#entry">1. 入口</a></li>
-        <li><a href="#directory">2. 当前目录</a></li>
-        <li><a href="#usage">3. 使用方式</a></li>
-        <li><a href="#spec">4. 报告规范</a></li>
-      </ul>
-    </div>
-  </nav>
-
-  <main class="container">
-    <section id="entry">
-      <h2>1. 入口</h2>
-      <div class="grid">
-        <article class="card">
-          <strong>`papers/`</strong>
-          <p>
-            所有论文 PDF、HTML 解读报告、tutorial 和 QA 页面统一放在这里。
-            这是后续唯一需要持续更新的内容目录。
-          </p>
-          <div class="actions">
-            <a class="button" href="papers/">打开 `papers/`</a>
-          </div>
+    <main>
+      <section aria-labelledby="papers-h">
+        <h2 id="papers-h">论文与资源</h2>
+                <div class="cards">
+        <article class="card card-html">
+          <span class="badge">HTML</span>
+          <h3 class="card-title"><a href="papers/LongVILA%20Scaling%20Long-Context%20Visual%20Language%20Models%20for%20Long%20Videos.html">LongVILA Scaling Long-Context Visual Language Models for Long Videos.html</a></h3>
+          <p class="card-folder">papers/</p>
         </article>
-
-        <article class="card">
-          <strong>`read_paper.md`</strong>
-          <p>
-            论文报告生成规范，包括页面结构、中文讲解方式、引用标注规则，以及重点的数据溯源要求。
-          </p>
-          <div class="actions">
-            <a class="button secondary" href="read_paper.md">打开 `read_paper.md`</a>
-          </div>
+        <article class="card card-pdf">
+          <span class="badge">PDF</span>
+          <h3 class="card-title"><a href="papers/LongVILA%20Scaling%20Long-Context%20Visual%20Language%20Models%20for%20Long%20Videos.pdf">LongVILA Scaling Long-Context Visual Language Models for Long Videos.pdf</a></h3>
+          <p class="card-folder">papers/</p>
         </article>
-      </div>
-
-      <div class="note">
-        <strong>设计原则：</strong><br />
-        首页固定，目录更新在 `papers/` 内部完成。这样部署到 GitHub Pages 后，后续新增论文时不必反复改首页。
-      </div>
-    </section>
-
-    <section id="directory">
-      <h2>2. 当前目录</h2>
-      <p>
-        当前资源目录路径是 <code>/papers/</code>。下面这个列表会优先在 GitHub Pages 上尝试读取仓库中的
-        <code>papers/</code> 当前内容，并直接生成可点击链接；如果无法自动读取，就回退到当前内置列表。
-      </p>
-
-      <div class="terminal">
-        <div class="terminal-bar">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="terminal-title">papers directory</span>
+        <article class="card card-html">
+          <span class="badge">HTML</span>
+          <h3 class="card-title"><a href="papers/PEARL-%20Personalized%20Streaming%20Video%20Understanding%20Model.html">PEARL- Personalized Streaming Video Understanding Model.html</a></h3>
+          <p class="card-folder">papers/</p>
+        </article>
+        <article class="card card-pdf">
+          <span class="badge">PDF</span>
+          <h3 class="card-title"><a href="papers/PEARL-%20Personalized%20Streaming%20Video%20Understanding%20Model.pdf">PEARL- Personalized Streaming Video Understanding Model.pdf</a></h3>
+          <p class="card-folder">papers/</p>
+        </article>
+        <article class="card card-html">
+          <span class="badge">HTML</span>
+          <h3 class="card-title"><a href="papers/TurboQuant.html">TurboQuant.html</a></h3>
+          <p class="card-folder">papers/</p>
+        </article>
+        <article class="card card-html">
+          <span class="badge">HTML</span>
+          <h3 class="card-title"><a href="papers/TurboQuant/TurboQuant.html">TurboQuant.html</a></h3>
+          <p class="card-folder">papers/TurboQuant/</p>
+        </article>
+        <article class="card card-pdf">
+          <span class="badge">PDF</span>
+          <h3 class="card-title"><a href="papers/TurboQuant/TurboQuant.pdf">TurboQuant.pdf</a></h3>
+          <p class="card-folder">papers/TurboQuant/</p>
+        </article>
+        <article class="card card-html">
+          <span class="badge">HTML</span>
+          <h3 class="card-title"><a href="papers/TurboQuant/TurboQuant_QA.html">TurboQuant_QA.html</a></h3>
+          <p class="card-folder">papers/TurboQuant/</p>
+        </article>
+        <article class="card card-html">
+          <span class="badge">HTML</span>
+          <h3 class="card-title"><a href="papers/TurboQuant/TurboQuant_tutorial.html">TurboQuant_tutorial.html</a></h3>
+          <p class="card-folder">papers/TurboQuant/</p>
+        </article>
         </div>
-        <pre>$ ls papers/
-LongVILA Scaling Long-Context Visual Language Models for Long Videos.html
-LongVILA Scaling Long-Context Visual Language Models for Long Videos.pdf
-PEARL- Personalized Streaming Video Understanding Model.html
-PEARL- Personalized Streaming Video Understanding Model.pdf
-TurboQuant
-TurboQuant.html</pre>
-      </div>
+      </section>
 
-      <div id="papers-list" class="file-list" aria-live="polite"></div>
-      <p id="papers-status" class="status"></p>
+      <section aria-labelledby="spec-h">
+        <h2 id="spec-h">read_paper.md</h2>
+        <div class="md-wrap">
+          <pre># Role
+你是一位学术报告专家兼前端开发工程师。请精读我上传的 PDF 论文，并制作一份结构清晰、内容详实的 **连续滚动式 HTML 报告**。
 
-      <div class="actions">
-        <a class="button" href="papers/">进入目录</a>
-      </div>
-    </section>
+# Task
+1. 深入分析论文的核心内容，覆盖背景、方法、实验、结论等方方面面。
+2. 将内容转化为一个独立的、自包含的 HTML 文件（包含内嵌 CSS）。
+3. 页面设计需适合阅读（而非投影），支持上下滚动浏览所有信息。
 
-    <section id="usage">
-      <h2>3. 使用方式</h2>
-      <ol>
-        <li>部署后，从首页直接进入 <code>papers/</code>。</li>
-        <li>后续新增论文、报告、教程时，只修改 <code>papers/</code> 内的内容。</li>
-        <li>如果需要查看报告生成要求，再返回首页打开 <code>read_paper.md</code>。</li>
-      </ol>
+# Content Requirements
+1. **语言风格**：主要解释使用中文，但专业名词、术语、变量名、缩写必须保留原始英文（中英混杂）。
+2. **引用标注**：在关键观点、数据、公式或图表描述后，务必标注原文对应的位置（如：Page 3, Section 2.1 或 Figure 4）。
+3. **信息密度**：内容要全面，逻辑分层清晰（使用 H1, H2, H3 标题），确保信息齐全且易于理解。
 
-      <div class="note">
-        <strong>GitHub Pages 提醒：</strong><br />
-        如果你希望 `papers/` 在网页端始终可浏览，最稳妥的做法仍然是在 `papers/` 目录里准备一个自己的 `index.html`。
-        这样首页和子目录页都可以长期稳定不变。
-      </div>
-    </section>
+4. **🔹 数据溯源专项要求（重点）** 🔹
+   - **训练/测试数据来源**：必须单独列出或使用醒目框体高亮说明，包括：
+     - 数据集名称（如：ImageNet, COCO, SQuAD 等）及官方链接/引用（如有）
+     - 数据规模（样本数量、类别数、时间跨度等）
+     - 数据采集方式（公开爬取、人工标注、仿真生成、合作机构提供等）
+     - 数据划分策略（train/val/test 比例、是否跨域、是否时序分割等）
+     - 预处理/增强方法（resize, normalization, augmentation 等）
+   - **多实验场景**：若论文包含多个实验/ablation study，请分别说明每个实验使用的数据来源，避免混淆。
+   - **位置标注**：所有数据相关信息后必须标注原文位置（如：Page 5, Dataset Section; Table 2）。
+   - **缺失说明**：若原文未明确说明数据来源，请标注&quot;⚠️ 原文未明确&quot;，并尝试从上下文推断。
 
-    <section id="spec">
-      <h2>4. 报告规范</h2>
-      <p>
-        下面保留 `read_paper.md` 的精简说明，方便快速回顾报告应该长什么样。
-      </p>
+# Layout &amp; Design (Critical)
+1. **文档结构**：
+   - 使用语义化 HTML 标签（`&lt;header&gt;`, `&lt;nav&gt;`, `&lt;main&gt;`, `&lt;section&gt;`, `&lt;footer&gt;`）。
+   - **不要使用幻灯片分页结构**，所有内容应在一个长页面中连续呈现。
+   - 建议在顶部添加 **目录导航（Table of Contents）**，点击可锚点跳转至对应章节。
+2. **阅读体验优化**：
+   - **容器宽度**：主体内容区域设置最大宽度（如 `max-width: 800px`），并居中显示，避免行过长影响阅读。
+   - **排版样式**：
+     - 字体：使用易读的无衬线字体（如 system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Arial）。
+     - 字号：正文建议 16px-18px，行高（line-height）1.6-1.8，保证舒适阅读。
+     - 间距：段落间、章节间要有足够的留白（margin/padding）。
+   - **重点高亮**：对于“数据溯源”部分，使用背景色块或边框进行视觉区分，使其在长文中易于定位。
+   - **响应式**：确保在手机和桌面端都能正常显示。
+3. **美观性**：
+   - 风格简洁现代，学术感强。
+   - **默认视觉风格采用 Ubuntu / Yaru 风格**：整体简洁、克制、偏工程感，使用 aubergine 深色标题区、Ubuntu orange 作为强调色、浅色内容卡片。
+   - 避免花哨渐变、复杂装饰和过度动画，重点保持稳定、清爽、好读。
+   - 适合 GitHub Pages 静态部署与长期积累，不要依赖运行时框架。
+   - 所有 CSS 样式必须内嵌（inline `&lt;style&gt;`），不依赖外部资源，保证离线可用。
+   - 代码结构清晰，注释明确。
+4. **推荐样式细节**：
+   - Hero / Header：使用深色 aubergine 区块，标题清晰，副标题简短。
+   - 内容区：使用圆角卡片、较浅边框、适度阴影，保持分区明确但不过度厚重。
+   - 强调元素：使用 Ubuntu orange 按钮、标签或左侧边框提示块。
+   - 代码或引用摘要：可使用终端风格深色块，但只在必要处使用，避免过多。
+   - 整体保持“简洁好看”，优先服务阅读，不要像产品营销页。
 
-      <div class="terminal">
-        <div class="terminal-bar">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="terminal-title">read_paper.md summary</span>
+# Output Format
+1. **文件路径**：输出内容请保存在 `papers/` 文件夹下。
+2. **文件名规则**：使用上传论文的原始文件名（不含扩展名），例如：
+   - 原论文：`Attention_Is_All_You_Need.pdf`
+   - 输出文件：`papers/Attention_Is_All_You_Need.html`
+3. **文件完整性**：
+   - 确保 HTML 代码在浏览器打开后，能呈现出整洁的文档报告效果。
+   - 无需分页控制，确保内容流畅连贯。</pre>
         </div>
-        <pre># Task
-- 深入分析论文背景、方法、实验、结论
-- 产出单个自包含 HTML 文件
-- 页面应适合阅读，并支持连续滚动
-
-# Key requirements
-- 主要用中文解释，术语保留英文
-- 关键观点后标注原文位置
-- 单独写清楚数据来源、规模、划分、预处理
-- 若原文未明确说明，要明确标注
-
-# Output
-- 文件输出到 papers/
-- 文件名与原论文同名（不含扩展名）
-- 所有 CSS 内嵌，适合离线查看</pre>
-      </div>
-
-      <div class="actions">
-        <a class="button secondary" href="read_paper.md">查看完整规范</a>
-      </div>
-    </section>
-  </main>
-
-  <footer class="container">
-    `index.html` is intentionally stable. Keep updating `papers/`, not this page.
-  </footer>
-  <script>
-    (function () {
-      const fallbackEntries = [
-        "LongVILA Scaling Long-Context Visual Language Models for Long Videos.html",
-        "LongVILA Scaling Long-Context Visual Language Models for Long Videos.pdf",
-        "PEARL- Personalized Streaming Video Understanding Model.html",
-        "PEARL- Personalized Streaming Video Understanding Model.pdf",
-        "TurboQuant",
-        "TurboQuant.html"
-      ];
-
-      const listEl = document.getElementById("papers-list");
-      const statusEl = document.getElementById("papers-status");
-
-      function classify(name) {
-        if (name.endsWith("/")) return "directory";
-        if (name.toLowerCase().endsWith(".html")) return "html report";
-        if (name.toLowerCase().endsWith(".pdf")) return "pdf";
-        return "file";
-      }
-
-      function entryHref(name) {
-        return "papers/" + encodeURIComponent(name).replace(/%2F/g, "/");
-      }
-
-      function render(entries, sourceLabel) {
-        listEl.innerHTML = "";
-        entries.forEach((name) => {
-          const a = document.createElement("a");
-          a.className = "file-item";
-          a.href = entryHref(name);
-
-          const title = document.createElement("span");
-          title.className = "file-name";
-          title.textContent = name;
-
-          const meta = document.createElement("span");
-          meta.className = "file-meta";
-          meta.textContent = classify(name);
-
-          a.appendChild(title);
-          a.appendChild(meta);
-          listEl.appendChild(a);
-        });
-
-        statusEl.textContent = sourceLabel;
-      }
-
-      function inferGitHubRepo() {
-        const host = window.location.hostname;
-        if (!host.endsWith(".github.io")) {
-          return null;
-        }
-
-        const owner = host.split(".")[0];
-        const segments = window.location.pathname.split("/").filter(Boolean);
-        const repo = segments.length > 0 ? segments[0] : owner + ".github.io";
-        return { owner, repo };
-      }
-
-      async function loadFromGitHub() {
-        const repoInfo = inferGitHubRepo();
-        if (!repoInfo) {
-          render(fallbackEntries, "Showing embedded fallback list.");
-          return;
-        }
-
-        const apiUrl = "https://api.github.com/repos/" + repoInfo.owner + "/" + repoInfo.repo + "/contents/papers";
-        try {
-          const response = await fetch(apiUrl, {
-            headers: { "Accept": "application/vnd.github+json" }
-          });
-
-          if (!response.ok) {
-            throw new Error("GitHub API request failed");
-          }
-
-          const data = await response.json();
-          const names = data
-            .map((item) => item.type === "dir" ? item.name + "/" : item.name)
-            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
-
-          render(names, "Live list loaded from GitHub repository contents.");
-        } catch (error) {
-          render(fallbackEntries, "GitHub listing unavailable, showing embedded fallback list.");
-        }
-      }
-
-      loadFromGitHub();
-    })();
-  </script>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
