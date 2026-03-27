@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PEARL: Personalized Streaming Video Understanding Model</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --border: #dbe3f0;
+      --warning-bg: #fff7ed;
+      --warning-border: #fdba74;
+      --success-bg: #ecfdf3;
+      --success-border: #86efac;
+      --shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 240px);
+      color: var(--text);
+      line-height: 1.72;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      width: min(920px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 56px 0 24px;
+    }
+
+    .hero {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(219, 227, 240, 0.95);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.28;
+      margin: 0 0 14px;
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: clamp(30px, 4vw, 42px);
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-top: 0;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-top: 28px;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 15px;
+      margin-top: 16px;
+    }
+
+    nav {
+      margin: 24px 0 36px;
+    }
+
+    .toc {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .toc ul {
+      margin: 0;
+      padding-left: 20px;
+      columns: 2;
+      column-gap: 32px;
+    }
+
+    .toc li {
+      margin: 0 0 10px;
+      break-inside: avoid;
+    }
+
+    main {
+      padding-bottom: 56px;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .lead {
+      font-size: 18px;
+      color: #344054;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: #f8fbff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      margin-left: 6px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .source-note,
+    .warning-note,
+    .success-note {
+      border-left: 5px solid;
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin: 18px 0;
+    }
+
+    .source-note {
+      background: #eef6ff;
+      border-color: #60a5fa;
+    }
+
+    .warning-note {
+      background: var(--warning-bg);
+      border-color: var(--warning-border);
+    }
+
+    .success-note {
+      background: var(--success-bg);
+      border-color: var(--success-border);
+    }
+
+    .citation {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    ul, ol {
+      padding-left: 22px;
+      margin: 0 0 16px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 15px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    footer {
+      color: var(--muted);
+      padding: 0 0 48px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .hero,
+      section,
+      .toc {
+        padding: 22px;
+      }
+
+      .toc ul {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="hero">
+        <span class="eyebrow">Paper Report</span>
+        <h1>PEARL: Personalized Streaming Video Understanding Model</h1>
+        <p class="lead">
+          这篇论文提出了一个新的研究问题 <strong>Personalized Streaming Video Understanding (PSVU)</strong>，
+          目标是让视觉语言模型在连续视频流里，边接收用户临时定义的个性化概念，边进行实时与历史问答。
+          作者同时给出首个对应 benchmark <strong>PEARL-Bench</strong>，并提出一个无需训练、可插拔的框架
+          <strong>PEARL</strong> 作为强基线。整体价值在于：它把“个性化理解”从静态图片和离线短视频推进到更接近真实助手场景的在线视频流。 
+          <span class="citation">(Page 1, Abstract; Page 2, Figure 1; Page 3, Introduction)</span>
+        </p>
+        <p class="meta">
+          Authors: Yuanhong Zheng, Ruichuan An, Xiaopeng Lin, Yuxing Liu, Sihan Yang, et al. |
+          arXiv:2603.20422v1 |
+          Code: <a href="https://github.com/Yuanhong-Zheng/PEARL">github.com/Yuanhong-Zheng/PEARL</a>
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="container">
+    <div class="toc">
+      <h2>目录</h2>
+      <ul>
+        <li><a href="#summary">1. 一句话总结与核心判断</a></li>
+        <li><a href="#background">2. 研究背景与问题动机</a></li>
+        <li><a href="#task">3. PSVU 任务定义</a></li>
+        <li><a href="#benchmark">4. PEARL-Bench 基准设计</a></li>
+        <li><a href="#data">5. 数据溯源专项说明</a></li>
+        <li><a href="#method">6. PEARL 方法详解</a></li>
+        <li><a href="#experiments">7. 实验结果与消融</a></li>
+        <li><a href="#insights">8. 论文亮点与启发</a></li>
+        <li><a href="#limitations">9. 局限性与风险</a></li>
+        <li><a href="#conclusion">10. 结论</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="summary">
+      <h2>1. 一句话总结与核心判断</h2>
+      <p>
+        如果把已有个性化 VLM 工作理解为“记住某个人/物，然后在静态图像或离线短视频里回答一次问题”，
+        那么 PEARL 的贡献就在于把这个范式升级为一个<strong>连续、在线、多轮、可动态定义概念</strong>的 setting。
+        论文真正的新意不只是提出一个 framework，而是先定义了一个更贴近实际 AI assistant 场景的新任务 PSVU，
+        再围绕该任务设计 benchmark 与 retrieval-memory 方案，形成了“任务定义 + 数据集 + baseline framework”的完整闭环。
+        <span class="citation">(Page 1, Abstract; Page 2, Figure 1; Page 3, Introduction)</span>
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <strong>核心任务</strong>
+          在 streaming video 中动态记住用户定义的 concept，并回答当前或过去时刻的问题。
+        </div>
+        <div class="card">
+          <strong>核心 benchmark</strong>
+          PEARL-Bench，覆盖 frame-level 与 video-level personalization，共 132 videos / 2,173 annotations。
+          <span class="citation">(Page 5, Table 2)</span>
+        </div>
+        <div class="card">
+          <strong>核心方法</strong>
+          双粒度记忆系统 + concept-aware retrieval，且 training-free / plug-and-play。
+          <span class="citation">(Page 8, Section 4; Page 9, Figure 3)</span>
+        </div>
+        <div class="card">
+          <strong>核心结果</strong>
+          在 8 个 offline/online baselines 对比中达到 SOTA，并在多种 backbone 上持续增益。
+          <span class="citation">(Page 10-11, Table 3)</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="background">
+      <h2>2. 研究背景与问题动机</h2>
+      <p>
+        作者指出，现有 personalized VLM 大多停留在静态图片，或者最多是离线视频理解。
+        这类方法与真实世界的人机交互有明显错位：真实助手往往面对的是<strong>连续视频流</strong>，
+        用户会在任意时刻说“这个人叫 A”“这个动作叫 B”，随后马上追问“她现在在做什么”或“他刚刚穿的是什么颜色”。
+        传统 setting 无法同时满足连续输入、动态概念注册、多轮问答、历史证据检索这几个要求。
+        <span class="citation">(Page 2-3, Introduction; Figure 1)</span>
+      </p>
+      <p>
+        论文用 customized fitness coaching、social wearable AI、personalized robotics 等应用场景说明，
+        下一代 personalized AI assistant 需要在视频流上实时响应，而不是在预先裁剪好的短片段上离线推理。
+        因此，这项工作不只是“把视频变长”，而是在任务范式上从 offline understanding 转向 online streaming understanding。
+        <span class="citation">(Page 2, Figure 1; Page 2-3, Introduction)</span>
+      </p>
+    </section>
+
+    <section id="task">
+      <h2>3. PSVU 任务定义</h2>
+      <p>
+        PSVU 的核心设定是：输入是一条持续到来的 streaming video，用户可以在任意时间点通过自然语言引入新的 concept，
+        模型需要把这些 concept 放入 memory，并在后续回答与这些 concept 相关的问题。论文把 concept 分成两类：
+        <strong>Frame-level Concepts</strong> 与 <strong>Video-level Concepts</strong>。
+        前者对应单帧中定义的人/物等静态实体，后者对应跨连续片段定义的动作模式。
+        <span class="citation">(Page 4-5, Section 3.1)</span>
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <strong>Frame-level Concepts</strong>
+          例如在某一帧定义“这个人叫 &lt;T&gt;”，重点是持续识别该人物/物体。
+          <span class="citation">(Page 4, Section 3.1)</span>
+        </div>
+        <div class="card">
+          <strong>Video-level Concepts</strong>
+          例如定义“这段动作叫 &lt;Action A&gt;”，重点是理解连续动作模式。
+          <span class="citation">(Page 5, Section 3.1)</span>
+        </div>
+        <div class="card">
+          <strong>Concept-Definition QA</strong>
+          用于注册概念，没有最终评分答案，但要求模型正确记住概念。
+          <span class="citation">(Page 5, Section 3.1; Page 6-7, Section 3.3)</span>
+        </div>
+        <div class="card">
+          <strong>Real-Time / Past-Time QA</strong>
+          前者只依赖当前场景，后者必须检索历史证据片段。
+          <span class="citation">(Page 5, Section 3.1)</span>
+        </div>
+      </div>
+
+      <p>
+        从形式化定义上，模型需要根据 query 从 evolving concept set 中取出相关 concept subset，
+        同时从 streaming history 中取出必要 visual context，再联合当前 query 生成答案。
+        这就把问题自然拆成两个子难点：<strong>如何存</strong>以及<strong>如何取</strong>。
+        PEARL 的设计正是围绕这两个难点展开。 <span class="citation">(Page 8, Section 4.1, Eq. 1)</span>
+      </p>
+    </section>
+
+    <section id="benchmark">
+      <h2>4. PEARL-Bench 基准设计</h2>
+      <p>
+        PEARL-Bench 的定位非常明确：它不是传统 image personalization benchmark 的延伸版，
+        而是第一个同时覆盖 <strong>长视频输入、streaming setting、多轮 concept interaction、frame-level 与 video-level personalization</strong>
+        的 benchmark。作者在 Table 1 中与 MyVLM、Yo'LLaVA、MC-LLaVA、PVChat、This-is-My 等做对比，
+        强调 PEARL-Bench 是唯一同时满足这些条件的数据集。 <span class="citation">(Page 5, Section 3.2; Table 1)</span>
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>统计项</th>
+            <th>Frame-level</th>
+            <th>Video-level</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>#Videos</td>
+            <td>112</td>
+            <td>20</td>
+            <td>132</td>
+          </tr>
+          <tr>
+            <td>Avg. Duration (s)</td>
+            <td>1,657</td>
+            <td>303</td>
+            <td>1,458</td>
+          </tr>
+          <tr>
+            <td>#Concept-Def QA</td>
+            <td>418</td>
+            <td>80</td>
+            <td>498</td>
+          </tr>
+          <tr>
+            <td>#Real-Time QA</td>
+            <td>922</td>
+            <td>359</td>
+            <td>1,281</td>
+          </tr>
+          <tr>
+            <td>#Past-Time QA</td>
+            <td>394</td>
+            <td>-</td>
+            <td>394</td>
+          </tr>
+          <tr>
+            <td>#Total QA</td>
+            <td>1,734</td>
+            <td>439</td>
+            <td>2,173</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="citation">(Page 5, Table 2)</p>
+
+      <p>
+        一个很重要的 benchmark 设计点是：它不只看“当前帧能不能识别”，还专门设置了
+        <strong>Past-Time QA</strong> 来评估模型是否能够找回历史证据并做时序推理。
+        对 frame-level 场景，这尤其关键，因为很多问题无法仅凭当前画面回答。
+        Video-level 场景则更强调动作模式识别，而不是人物外观。 <span class="citation">(Page 5-7, Section 3; Figure 2)</span>
+      </p>
+
+      <div class="success-note">
+        <strong>为什么这个 benchmark 有意义？</strong><br />
+        很多现有 benchmark 即使标榜“视频 personalization”，也仍然是短视频、离线、单轮或只支持静态实体。
+        PEARL-Bench 则把“在线记忆 + 连续概念注册 + 历史检索”一起纳入评估目标，这使它更接近真正的 assistant benchmark。
+        <span class="citation">(Page 5, Table 1; Page 6-7, Figure 2)</span>
+      </div>
+    </section>
+
+    <section id="data">
+      <h2>5. 数据溯源专项说明 <span class="badge">重点</span></h2>
+
+      <div class="source-note">
+        <strong>总览：</strong>
+        论文明确说明，PEARL-Bench 的数据不是来自单一公开 benchmark，而是通过
+        <strong>公开互联网视频 + 人工筛选 + 程序化合成 + 人工标注/复核</strong> 的方式构建。
+        其中 frame-level 与 video-level 的来源机制明显不同。 <span class="citation">(Page 3, Introduction; Page 6-7, Section 3.3)</span>
+      </div>
+
+      <h3>5.1 数据集名称与组成</h3>
+      <ul>
+        <li>
+          数据集名称：<strong>PEARL-Bench</strong>，论文自建 benchmark。
+          <span class="citation">(Page 1, Abstract; Page 5, Section 3.2)</span>
+        </li>
+        <li>
+          规模：132 个视频，2,173 条带精确时间戳的 annotations；frame-level 112 videos，video-level 20 videos。
+          <span class="citation">(Page 5, Table 2)</span>
+        </li>
+        <li>
+          数据模式：包含 Concept-Definition QA、Real-Time QA、Past-Time QA 三种标注类型。
+          <span class="citation">(Page 5, Section 3.1; Page 6-7, Section 3.3)</span>
+        </li>
+      </ul>
+
+      <h3>5.2 训练 / 测试数据来源</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>实验部分</th>
+            <th>数据来源</th>
+            <th>采集方式</th>
+            <th>备注</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Frame-level personalization</td>
+            <td>公开互联网视频，覆盖 anime、movies、reality shows 等多域内容</td>
+            <td>人工收集 + 人工过滤</td>
+            <td>要求高动态性、可定义 concept、分辨率不低于 480p</td>
+          </tr>
+          <tr>
+            <td>Video-level personalization</td>
+            <td>数字人合成视频</td>
+            <td>使用 Mixamo 资产随机组合 8 个 characters、20 个 actions、20 个 background scenes 进行合成</td>
+            <td>每个 distinct action 作为一个 video-level concept</td>
+          </tr>
+          <tr>
+            <td>Concept names</td>
+            <td>SSA baby names 数据库中的 10k 常见名字</td>
+            <td>随机替换原始概念名</td>
+            <td>避免模型利用先验知识记忆真实角色名</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="citation">(Page 6-7, Section 3.3; Page 7, lines about 10k common names; Reference [43], [44])</p>
+
+      <h3>5.3 数据规模与时间跨度</h3>
+      <ul>
+        <li>平均视频时长：frame-level 1,657 秒，video-level 303 秒，总平均 1,458 秒。<span class="citation">(Page 5, Table 2)</span></li>
+        <li>frame-level 总 QA 数：1,734；video-level 总 QA 数：439。<span class="citation">(Page 5, Table 2)</span></li>
+        <li>视频级动作数据由 8 个角色、20 个动作、20 个背景场景随机组合得到，以增强多样性。<span class="citation">(Page 6, Section 3.3)</span></li>
+      </ul>
+
+      <h3>5.4 数据采集与标注流程</h3>
+      <ol>
+        <li>先进行视频收集与过滤，确保视频动态性强、概念可反复出现、分辨率不低于 480p。 <span class="citation">(Page 6, Section 3.3)</span></li>
+        <li>随后标注三类 QA：Concept-Definition、Real-Time、Past-Time。 <span class="citation">(Page 6-7, Section 3.3)</span></li>
+        <li>Real-Time 与 Past-Time 的 distractors 由强 VLM 辅助生成。 <span class="citation">(Page 7, Section 3.3)</span></li>
+        <li>最后通过 automated filtering + human verification 做质量控制。团队共 10 名研究人员，其中 6 人主标，4 人复核。 <span class="citation">(Page 7, Section 3.3)</span></li>
+      </ol>
+
+      <h3>5.5 数据划分策略</h3>
+      <div class="warning-note">
+        <strong>⚠️ 原文未明确：</strong>
+        论文给出了 frame-level / video-level 两个大类划分，但没有在正文中明确说明传统意义上的
+        <code>train / val / test</code> 比例或官方 split 方案，也未描述是否存在跨域划分、时间切分、按视频来源切分等策略。
+        从实验写法看，论文主要把 PEARL-Bench 作为统一评测 benchmark 来汇报结果，而不是强调监督训练划分。
+        <span class="citation">(Page 5, Section 3.2; Page 10-13, Section 5)</span>
+      </div>
+
+      <h3>5.6 预处理 / 增强方法</h3>
+      <ul>
+        <li>Streaming video 使用 <code>PySceneDetect</code> 做 scene boundary detection，按语义片段切分。<span class="citation">(Page 10, Section 5.1; Page 27, Appendix E.1)</span></li>
+        <li>默认输入流按 <code>1 FPS</code> 采样。<span class="citation">(Page 10, Section 5.1; Page 27, Appendix E.1)</span></li>
+        <li>Scene detection 使用 HSV colorspace pixel changes，threshold 为 <code>27.0</code>；clip 最短 1.0 秒，最长 8.0 秒，超长片段会被再切分。<span class="citation">(Page 27-28, Appendix E.1)</span></li>
+        <li>对 offline baselines，frame-level 使用均匀采样 64 帧；video-level 使用 64 秒窗口并以 1 FPS 采样。<span class="citation">(Page 10, Section 5.1)</span></li>
+      </ul>
+
+      <h3>5.7 多实验场景的数据使用</h3>
+      <ul>
+        <li>Frame-level Results 使用 frame-level split。<span class="citation">(Page 11-12, Section 5.3)</span></li>
+        <li>Video-level Results 使用 video-level split。<span class="citation">(Page 12, Section 5.4)</span></li>
+        <li>Ablation Study 明确在 frame-level split 上用 Qwen3-VL-8B 做组件分析。<span class="citation">(Page 12-13, Section 5.5; Table 4)</span></li>
+        <li>Latency 对比报告的是 frame-level split 的 end-to-end inference latency。<span class="citation">(Page 13, Table 5)</span></li>
+      </ul>
+
+      <h3>5.8 数据来源链接 / 引用</h3>
+      <ul>
+        <li>Mixamo: <a href="https://www.mixamo.com/">https://www.mixamo.com/</a> <span class="citation">(Reference [43])</span></li>
+        <li>SSA Popular Baby Names: <a href="https://www.ssa.gov/oact/babynames/">https://www.ssa.gov/oact/babynames/</a> <span class="citation">(Reference [44])</span></li>
+      </ul>
+    </section>
+
+    <section id="method">
+      <h2>6. PEARL 方法详解</h2>
+      <p>
+        PEARL 被设计成一个 <strong>training-free</strong>、<strong>plug-and-play</strong> 的框架，
+        目标不是重训一个全新 video model，而是给现有 VLM 增加 streaming personalization 能力。
+        整个方法分为两个核心模块：<strong>Dual-grained Memory System</strong> 与
+        <strong>Concept-aware Retrieval Algorithm</strong>。 <span class="citation">(Page 8-9, Section 4; Figure 3)</span>
+      </p>
+
+      <h3>6.1 Dual-grained Memory System</h3>
+      <p>
+        作者把 memory 显式拆成两层：<strong>Streaming Memory</strong> 负责存视频片段及其 embedding，
+        <strong>Concept Memory</strong> 负责存用户动态定义的 concept，包括 concept 名称、视觉证据和文本描述。
+        这种拆法很关键，因为视频流历史与 concept 本身是两种粒度完全不同的信息：一个是时间序列证据库，
+        一个是个性化词典。 <span class="citation">(Page 8-9, Section 4.2; Figure 3a)</span>
+      </p>
+      <ul>
+        <li>Streaming Memory：对每个新 clip 计算 multimodal embedding 并存储，用于后续历史检索。<span class="citation">(Page 8-9, Section 4.2)</span></li>
+        <li>Concept Memory：当用户发出 Concept-Definition query 时，抽取视觉证据并生成 compact textual description，再存入记忆。<span class="citation">(Page 9, Section 4.2)</span></li>
+        <li>Frame-level 概念存单帧证据，video-level 概念存整个 clip 作为证据。<span class="citation">(Page 9, Section 4.2)</span></li>
+      </ul>
+
+      <h3>6.2 Concept-aware Retrieval</h3>
+      <p>
+        真实难点不在“记住名字”，而在“用户问名字时，embedding model 其实不认识这个新造词”。
+        PEARL 的解法是：先在 query 中识别 concept 名称，再用对应 description 把 query 重写成带显式视觉语义的版本，
+        然后用这个 rewritten query 去检索历史 clip。这个 idea 很实用，因为 retrieval space 更擅长处理
+        “a young woman with long dark hair” 这类显式描述，而不是“&lt;Y&gt;”这种私有占位符。
+        <span class="citation">(Page 9, Section 4.3; Figure 3b; Appendix C.2)</span>
+      </p>
+      <ol>
+        <li>从 query 中识别被提到的 concept names，取出对应的 Concept Memory 条目。 <span class="citation">(Page 9, Section 4.3)</span></li>
+        <li>将 query 中 concept names 用概念描述替换，得到 rewritten query。 <span class="citation">(Page 9, Section 4.3; Appendix C.2)</span></li>
+        <li>对 rewritten query 编码，与所有历史 clips embedding 做 cosine similarity。 <span class="citation">(Page 9, Section 4.3)</span></li>
+        <li>选 top-K 相关 clips，并扩展相邻 N 个 clips 获得局部时序上下文。 <span class="citation">(Page 9, Section 4.3; Page 13, Hyperparameter Analysis)</span></li>
+        <li>将 concept entries、retrieved historical clips、current clip、original query 一起送入 VLM 输出答案。 <span class="citation">(Page 9, Section 4.3)</span></li>
+      </ol>
+
+      <h3>6.3 Implementation Details</h3>
+      <ul>
+        <li>Embedding model 使用 <code>Qwen3-VL-Embedding-2B</code>。<span class="citation">(Page 10, Section 5.1)</span></li>
+        <li>Base models 包括 <code>LLaVA-OV-7B</code>、<code>Qwen2-VL-7B</code>、<code>Qwen3-VL-8B</code>。<span class="citation">(Page 10, Section 5.1)</span></li>
+        <li>默认 retrieval 参数：<code>K = 4</code>；frame-level 取 <code>N = 1</code>，video-level 取 <code>N = 0</code>。<span class="citation">(Page 10, Section 5.1)</span></li>
+        <li>评估时使用 cyclic option rotation，减少 MCQA 选项偏置。<span class="citation">(Page 10, Section 5.1; Page 28, Appendix E.2)</span></li>
+      </ul>
+    </section>
+
+    <section id="experiments">
+      <h2>7. 实验结果与消融</h2>
+
+      <h3>7.1 上下界：Human Score 与 Text-only</h3>
+      <p>
+        论文先给出一个很有说服力的上下界：Human 几乎在全部指标上接近 97%，而 Text-only baseline 极低，
+        说明这个 benchmark 不能靠文字先验“猜”过去，必须真的依赖视觉流和 concept grounding。
+        <span class="citation">(Page 10-11, Table 3)</span>
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Frame RT</th>
+            <th>Frame PT</th>
+            <th>Frame Avg</th>
+            <th>Video RT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Human</td>
+            <td>97.61</td>
+            <td>96.45</td>
+            <td>97.03</td>
+            <td>97.49</td>
+          </tr>
+          <tr>
+            <td>Qwen3-VL-8B Text-only</td>
+            <td>11.06</td>
+            <td>17.45</td>
+            <td>14.26</td>
+            <td>7.04</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="citation">(Page 10-11, Table 3)</p>
+
+      <h3>7.2 总体结果</h3>
+      <p>
+        在 open-source offline、proprietary offline、open-source online 多类 baseline 中，
+        <strong>Qwen3-VL-8B + PEARL</strong> 是整体最强方案之一，frame-level average 达到 52.24，
+        video-level real-time 达到 48.39，显著高于其不带 PEARL 的基座与多个 online baselines。
+        尤其值得注意的是：PEARL 并没有通过训练更新模型参数，而是仅凭 memory + retrieval 结构就获得大幅收益。
+        <span class="citation">(Page 10-12, Table 3; Sections 5.3 and 5.4)</span>
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Frame Avg</th>
+            <th>Video RT</th>
+            <th>关键信息</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gemini3-pro-preview</td>
+            <td>48.19</td>
+            <td>24.51</td>
+            <td>强 proprietary offline baseline</td>
+          </tr>
+          <tr>
+            <td>StreamForest-7B</td>
+            <td>35.02</td>
+            <td>10.85</td>
+            <td>最强 open-source online baseline 之一</td>
+          </tr>
+          <tr>
+            <td>Qwen3-VL-8B</td>
+            <td>28.77</td>
+            <td>25.51</td>
+            <td>不带 PEARL 的 offline base</td>
+          </tr>
+          <tr>
+            <td>Qwen3-VL-8B + PEARL</td>
+            <td>52.24</td>
+            <td>48.39</td>
+            <td>分别提升 +23.47 / +22.88</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="citation">(Page 10-11, Table 3)</p>
+
+      <h3>7.3 消融实验说明了什么</h3>
+      <p>
+        Table 4 是整篇论文最能说明“方法为什么有效”的一张表。结果显示：
+        只有 current clip 时，性能只比 text-only 略高；加入 Concept Memory 后，Real-Time accuracy 大幅跃升；
+        再加入 Streaming Memory 后，Past-Time accuracy 明显提高；最后加入 Query Rewriting，整体再进一步提升。
+        这说明 PEARL 的增益确实来自 concept grounding 与历史证据检索，而不是某个 incidental trick。
+        <span class="citation">(Page 12-13, Table 4)</span>
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>配置</th>
+            <th>Real-Time</th>
+            <th>Past-Time</th>
+            <th>Avg</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Text-only</td>
+            <td>11.06</td>
+            <td>17.45</td>
+            <td>14.26</td>
+          </tr>
+          <tr>
+            <td>+ Current Clip</td>
+            <td>15.84</td>
+            <td>20.30</td>
+            <td>18.07</td>
+          </tr>
+          <tr>
+            <td>+ Concept Memory</td>
+            <td>51.41</td>
+            <td>25.43</td>
+            <td>38.42</td>
+          </tr>
+          <tr>
+            <td>+ Streaming Memory</td>
+            <td>50.22</td>
+            <td>45.69</td>
+            <td>47.96</td>
+          </tr>
+          <tr>
+            <td>+ Query Rewriting (full PEARL)</td>
+            <td>54.99</td>
+            <td>49.49</td>
+            <td>52.24</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="citation">(Page 12-13, Table 4)</p>
+
+      <h3>7.4 效率结果</h3>
+      <p>
+        作者强调 PEARL 并不是“高性能但极慢”的方案。以 frame-level avg 为例，
+        <code>LLaVA-OV-7B + PEARL</code> 在 775 ms latency 下取得 38.03，
+        不仅优于原始 LLaVA-OV-7B，也快于多个 online baselines。
+        更重要的是，latency 的主瓶颈仍然是底层 LLM inference，而不是 retrieval / rewriting 模块本身。
+        这说明 PEARL 具备真实在线部署潜力。 <span class="citation">(Page 13, Table 5; Figure 5)</span>
+      </p>
+    </section>
+
+    <section id="insights">
+      <h2>8. 论文亮点与启发</h2>
+      <ul>
+        <li>
+          <strong>亮点 1：任务定义先行。</strong>
+          很多工作直接上方法，而这篇论文先把 PSVU 这个问题形式化，再构建 benchmark 和 baseline，研究闭环较完整。
+          <span class="citation">(Page 3-5, Sections 1 and 3)</span>
+        </li>
+        <li>
+          <strong>亮点 2：显式 concept memory 非常关键。</strong>
+          对 personalization 来说，用户临时命名的 token 本身是无语义的，必须通过描述化、记忆化才能进入 retrieval pipeline。
+          <span class="citation">(Page 9, Section 4.3; Page 12-13, Table 4)</span>
+        </li>
+        <li>
+          <strong>亮点 3：query rewriting 是一个低成本高回报技巧。</strong>
+          它本质上把“私有名字空间”映射回 embedding-friendly 的视觉语义空间。
+          <span class="citation">(Page 9, Section 4.3; Appendix C.2)</span>
+        </li>
+        <li>
+          <strong>亮点 4：benchmark 设计兼顾当前理解与历史回溯。</strong>
+          这比只做实时问答更接近真实 agent / assistant 的长期交互要求。
+          <span class="citation">(Page 5-7, Section 3)</span>
+        </li>
+      </ul>
+    </section>
+
+    <section id="limitations">
+      <h2>9. 局限性与风险</h2>
+      <p>
+        虽然论文结果很强，但仍有几个值得谨慎看待的点：
+      </p>
+      <ul>
+        <li>
+          <strong>数据规模仍不算大。</strong>
+          132 个视频对 benchmark 研究已不错，但相较真实世界 streaming assistant 的复杂度仍有限。
+          <span class="citation">(Page 5, Table 2)</span>
+        </li>
+        <li>
+          <strong>Video-level 数据部分来自合成数字人。</strong>
+          这有助于控制动作标签质量，但也可能带来 synthetic-to-real gap。
+          <span class="citation">(Page 6, Section 3.3)</span>
+        </li>
+        <li>
+          <strong>原文对 train/val/test 公开划分未详细描述。</strong>
+          这会影响后续社区复现实验协议的一致性。 <span class="citation">(Page 5, Section 3.2; Page 10-13, Section 5)</span>
+        </li>
+        <li>
+          <strong>Concept registration 依赖 base model 生成描述质量。</strong>
+          如果 description 过短、过泛或抓错稳定特征，retrieval 质量会受影响。
+          这一点从 prompt 设计里可以侧面看出。 <span class="citation">(Page 9, Section 4.2; Page 22-24, Appendix C.1)</span>
+        </li>
+        <li>
+          <strong>评估仍以多选 QA 为主。</strong>
+          虽然 cyclic option rotation 缓解了选项偏置，但距离开放式真实对话仍有差距。
+          <span class="citation">(Page 10, Section 5.1; Page 28, Appendix E.2)</span>
+        </li>
+      </ul>
+
+      <div class="warning-note">
+        <strong>一个很实际的研究风险：</strong><br />
+        PEARL 的核心优势来自“名字替换成描述再检索”的机制，因此若未来场景里用户定义的是非常细粒度、
+        难以用稳定文本描述区分的概念，当前 query rewriting + embedding retrieval 方案可能会遇到瓶颈。
+        这也是后续可继续扩展的方向。 <span class="citation">(Page 9, Section 4.3; Page 22-24, Appendix C)</span>
+      </div>
+    </section>
+
+    <section id="conclusion">
+      <h2>10. 结论</h2>
+      <p>
+        PEARL 这篇论文最值得关注的地方，在于它把个性化视频理解从“离线、短视频、单轮交互”推进到
+        “在线、连续、多轮、可动态定义概念”的新范式。PEARL-Bench 为这个问题提供了第一个较系统的评测框架，
+        而 PEARL 方法则证明：即便不做额外训练，只要把 concept memory、streaming memory 和 retrieval 机制设计好，
+        现有 VLM 也可以显著增强对 streaming personalization 的支持。 <span class="citation">(Page 14, Conclusion)</span>
+      </p>
+      <p>
+        从研究价值上看，这项工作很像 personalized VLM、streaming video understanding 与 memory-augmented retrieval
+        三条线索的交叉点。它既是一个 benchmark paper，也是一篇相当有工程可落地性的系统设计论文。
+      </p>
+    </section>
+  </main>
+
+  <footer class="container">
+    <p>
+      Report generated from the paper PDF: <em>PEARL: Personalized Streaming Video Understanding Model</em>.
+      All factual claims above are grounded in the paper and annotated with page / section / figure / table references where applicable.
+    </p>
+  </footer>
+</body>
+</html>

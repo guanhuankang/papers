@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TurboQuant Tutorial: 从零理解怎么实现、怎么用</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --border: #dbe3f0;
+      --note-bg: #eef6ff;
+      --note-border: #60a5fa;
+      --warn-bg: #fff7ed;
+      --warn-border: #fb923c;
+      --ok-bg: #ecfdf3;
+      --ok-border: #4ade80;
+      --code-bg: #0f172a;
+      --code-text: #e5eefb;
+      --shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #edf4ff 0%, var(--bg) 240px);
+      color: var(--text);
+      line-height: 1.72;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      width: min(980px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 56px 0 24px;
+    }
+
+    .hero {
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(219, 227, 240, 0.95);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.28;
+      margin: 0 0 14px;
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: clamp(30px, 4vw, 42px);
+    }
+
+    h2 {
+      font-size: 28px;
+    }
+
+    h3 {
+      font-size: 21px;
+      margin-top: 28px;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    .lead {
+      font-size: 18px;
+      color: #344054;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 15px;
+      margin-top: 16px;
+    }
+
+    nav {
+      margin: 24px 0 36px;
+    }
+
+    .toc {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .toc ul {
+      margin: 0;
+      padding-left: 20px;
+      columns: 2;
+      column-gap: 32px;
+    }
+
+    .toc li {
+      margin: 0 0 10px;
+      break-inside: avoid;
+    }
+
+    main {
+      padding-bottom: 56px;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: #f8fbff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .note,
+    .warning,
+    .success {
+      border-left: 5px solid;
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin: 18px 0;
+    }
+
+    .note {
+      background: var(--note-bg);
+      border-color: var(--note-border);
+    }
+
+    .warning {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+    }
+
+    .success {
+      background: var(--ok-bg);
+      border-color: var(--ok-border);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      margin-left: 6px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    ul, ol {
+      margin: 0 0 16px;
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 15px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    pre {
+      margin: 18px 0;
+      padding: 18px;
+      overflow-x: auto;
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 16px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    footer {
+      color: var(--muted);
+      padding: 0 0 48px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .hero,
+      section,
+      .toc {
+        padding: 22px;
+      }
+
+      .toc ul {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="hero">
+        <span class="eyebrow">Beginner Tutorial</span>
+        <h1>TurboQuant 教程：从零理解它怎么实现、怎么应用</h1>
+        <p class="lead">
+          这不是论文复述版，而是一份给“刚接触量化压缩”的读者准备的 tutorial。
+          目标只有三个：先理解 <strong>它在做什么</strong>，再理解 <strong>为什么这样做</strong>，
+          最后知道 <strong>自己在工程里该怎么落地</strong>。
+        </p>
+        <p class="meta">
+          基于论文 `TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate` 编写 |
+          配套深入解读见 `papers/tirboquant.html`
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="container">
+    <div class="toc">
+      <h2>目录</h2>
+      <ul>
+        <li><a href="#quickstart">1. 先用 1 分钟理解 TurboQuant</a></li>
+        <li><a href="#basics">2. 什么是量化压缩</a></li>
+        <li><a href="#intuition">3. TurboQuant 的直觉</a></li>
+        <li><a href="#mse">4. TurboQuantmse 怎么实现</a></li>
+        <li><a href="#prod">5. TurboQuantprod 怎么实现</a></li>
+        <li><a href="#pseudocode">6. 最小伪代码</a></li>
+        <li><a href="#applications">7. 具体怎么应用</a></li>
+        <li><a href="#choose">8. 怎么选参数和版本</a></li>
+        <li><a href="#pitfalls">9. 常见坑</a></li>
+        <li><a href="#takeaway">10. 最后记住什么</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="quickstart">
+      <h2>1. 先用 1 分钟理解 TurboQuant</h2>
+      <p>
+        你可以把 TurboQuant 理解成一个“先把向量打散，再做简单量化”的方法。
+      </p>
+      <ol>
+        <li>先把原始高维向量旋转一下，让每一维看起来更平均、更好处理。</li>
+        <li>然后对每一维单独量化，不再学习复杂的大码本。</li>
+        <li>如果你只关心重建误差，用 <code>TurboQuantmse</code>。</li>
+        <li>如果你关心点积、相似度、注意力分数，要用 <code>TurboQuantprod</code>，因为它专门处理了偏差问题。</li>
+      </ol>
+
+      <div class="grid">
+        <div class="card">
+          <strong>一句话版</strong>
+          先随机旋转，再逐维量化。
+        </div>
+        <div class="card">
+          <strong>适合什么</strong>
+          KV cache、向量检索、ANN、相似度计算。
+        </div>
+        <div class="card">
+          <strong>优点</strong>
+          不需要按数据集重新训练 codebook，在线场景友好。
+        </div>
+        <div class="card">
+          <strong>要点</strong>
+          低 MSE 不等于点积无偏，这也是论文设计两种版本的原因。
+        </div>
+      </div>
+    </section>
+
+    <section id="basics">
+      <h2>2. 什么是量化压缩</h2>
+      <p>
+        假设你有一个浮点向量：
+      </p>
+      <pre>[0.21, -0.87, 1.33, 0.04, -0.55, ...]</pre>
+      <p>
+        如果直接存成 <code>float16</code> 或 <code>float32</code>，每个数要用很多 bit。
+        量化压缩的目标是：把这些浮点数换成更短的表示，比如 2 bit、3 bit、4 bit，
+        这样内存占用更低、带宽更省、传输更快。
+      </p>
+      <p>
+        最简单的量化想法是“每一维直接四舍五入到某几个固定值”。但高维向量有两个难点：
+      </p>
+      <ul>
+        <li>不同维度分布不一样，直接量化可能误差很大。</li>
+        <li>很多任务真正关心的不是“每个值看起来接近”，而是“点积、相似度还能不能算准”。</li>
+      </ul>
+
+      <div class="note">
+        <strong>对初学者最重要的一句话：</strong><br />
+        量化不是单纯把数变小，而是在“存储成本”和“任务误差”之间做平衡。
+      </div>
+    </section>
+
+    <section id="intuition">
+      <h2>3. TurboQuant 的直觉</h2>
+      <h3>3.1 它为什么先旋转向量？</h3>
+      <p>
+        因为原始向量往往很“偏”。有些维度值总是特别大，有些维度分布特别怪，
+        直接逐维量化会很难设计统一规则。
+      </p>
+      <p>
+        TurboQuant 的想法是：先做一个随机正交变换，把信息“打散”到所有维度里。
+        打散后，每一维会更像同一种分布，这时你就能用同一套简单规则逐维量化。
+      </p>
+
+      <h3>3.2 它和 Product Quantization 的感觉区别</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>方法</th>
+            <th>直觉</th>
+            <th>代价</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PQ</td>
+            <td>把向量切成块，每块学一个 codebook。</td>
+            <td>需要训练 codebook，索引前准备工作重。</td>
+          </tr>
+          <tr>
+            <td>TurboQuant</td>
+            <td>先打散，再对每个坐标直接量化。</td>
+            <td>准备更轻，更适合在线场景。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="success">
+        <strong>可以这样记：</strong><br />
+        PQ 更像“先学习一套词典再编码”，TurboQuant 更像“先把数据打匀，再按统一刻度尺编码”。
+      </div>
+    </section>
+
+    <section id="mse">
+      <h2>4. TurboQuantmse 怎么实现 <span class="tag">重建误差版</span></h2>
+      <p>
+        这是最容易理解的版本。它的目标很简单：量化后解码出来的向量，尽量和原始向量接近。
+      </p>
+
+      <h3>4.1 离线准备</h3>
+      <ol>
+        <li>确定维度 <code>d</code> 和 bit-width <code>b</code>。</li>
+        <li>生成一个随机正交矩阵 <code>Π</code>。</li>
+        <li>为该 bit-width 准备一个 1D codebook，也就是一组标量中心值 <code>c1...c_(2^b)</code>。</li>
+      </ol>
+      <p>
+        其中第 3 步就是“这一维如果只能存 2 bit，那 4 个代表值应该放在哪里最合适”。
+        论文的做法是根据旋转后坐标的理论分布，用 Lloyd-Max 这类方法把这些中心值求出来。
+      </p>
+
+      <h3>4.2 在线量化</h3>
+      <ol>
+        <li>输入向量 <code>x</code>。</li>
+        <li>先计算 <code>y = Πx</code>。</li>
+        <li>对每个坐标 <code>y_j</code>，找到最近的中心值 <code>c_k</code>。</li>
+        <li>存下索引 <code>idx_j = k</code>，而不是存原始浮点数。</li>
+      </ol>
+
+      <h3>4.3 解码</h3>
+      <ol>
+        <li>根据每个 <code>idx_j</code> 查回代表值 <code>c_(idx_j)</code>。</li>
+        <li>拼成量化后的旋转向量 <code>ŷ</code>。</li>
+        <li>再做一次反旋转 <code>x_hat = Π^T ŷ</code>。</li>
+      </ol>
+
+      <pre>原始向量 x
+  -> 随机旋转 Πx
+  -> 每维映射到最近中心值
+  -> 只保存中心值索引
+  -> 查表恢复 ŷ
+  -> 反旋转得到 x_hat</pre>
+
+      <div class="note">
+        <strong>为什么这很省？</strong><br />
+        因为每一维不再存浮点数，只存一个很小的索引。比如 4 bit 就表示每维只允许 16 个代表值。
+      </div>
+
+      <h3>4.4 一个玩具例子</h3>
+      <p>
+        假设 2 bit 量化的 1D 中心值是：
+      </p>
+      <pre>[-1.2, -0.4, 0.4, 1.2]</pre>
+      <p>
+        某次旋转后某一维的值是 <code>0.53</code>，那它会被映射到最近的 <code>0.4</code>，
+        存的不是 <code>0.53</code>，而是索引 <code>2</code>。这就是“量化”最本质的动作。
+      </p>
+    </section>
+
+    <section id="prod">
+      <h2>5. TurboQuantprod 怎么实现 <span class="tag">点积友好版</span></h2>
+      <p>
+        这个版本是整篇论文最关键的地方。原因是：
+        <strong>有些任务不在乎向量本身长得像不像，而在乎点积算得准不准。</strong>
+      </p>
+      <p>
+        比如：
+      </p>
+      <ul>
+        <li>检索系统里，你关心 query 和 database vector 的相似度排序。</li>
+        <li>Transformer attention 里，你关心 <code>q · k</code> 的分数。</li>
+        <li>推荐系统里，你关心 user embedding 和 item embedding 的打分。</li>
+      </ul>
+
+      <h3>5.1 为什么 MSE 好还不够？</h3>
+      <p>
+        因为一个量化器即使平均重建误差很小，也可能系统性地把点积变大或变小。
+        这叫 <strong>bias</strong>。在相似度任务里，bias 比噪声更危险，因为它会稳定地把排序带偏。
+      </p>
+
+      <h3>5.2 TurboQuantprod 的结构</h3>
+      <ol>
+        <li>先用 <code>TurboQuantmse</code> 做一个粗但很强的近似，得到 <code>x_mse_hat</code>。</li>
+        <li>计算残差 <code>r = x - x_mse_hat</code>。</li>
+        <li>再对残差做 1-bit 的 <code>QJL</code> 编码，只记录每一维的符号信息。</li>
+        <li>解码时，把“粗近似 + 残差估计”加起来。</li>
+      </ol>
+
+      <pre>x
+  -> TurboQuantmse 得到 x_mse_hat
+  -> residual r = x - x_mse_hat
+  -> 对 r 做 1-bit QJL
+  -> 解码时恢复 x_mse_hat + r_hat</pre>
+
+      <h3>5.3 这个设计为什么合理？</h3>
+      <p>
+        因为第一步已经把大部分信息保留下来了，所以残差 <code>r</code> 通常很小。
+        对一个很小的残差做 1-bit 估计，虽然看起来粗糙，但总误差就会被压住。
+        同时 QJL 又能保证点积估计是无偏的，所以整体非常适合“我主要靠点积工作”的场景。
+      </p>
+
+      <div class="success">
+        <strong>一句话总结这个版本：</strong><br />
+        先用 MSE 版本把“大头”压缩掉，再用一个专门为点积设计的 1-bit 修正层把偏差补回来。
+      </div>
+    </section>
+
+    <section id="pseudocode">
+      <h2>6. 最小伪代码</h2>
+
+      <h3>6.1 TurboQuantmse</h3>
+      <pre>setup(d, b):
+    Pi = random_orthogonal_matrix(d)
+    centroids = build_scalar_codebook(d, b)
+    return Pi, centroids
+
+quant_mse(x, Pi, centroids):
+    norm = l2_norm(x)
+    x_unit = x / max(norm, eps)
+    y = Pi @ x_unit
+    idx = [nearest_centroid_id(y_j, centroids) for y_j in y]
+    return idx, norm
+
+dequant_mse(idx, norm, Pi, centroids):
+    y_hat = [centroids[i] for i in idx]
+    x_hat = Pi.T @ y_hat
+    return norm * x_hat</pre>
+
+      <h3>6.2 TurboQuantprod</h3>
+      <pre>setup_prod(d, b):
+    Pi, centroids = setup(d, b - 1)
+    S = gaussian_matrix(d, d)
+    return Pi, centroids, S
+
+quant_prod(x, Pi, centroids, S):
+    idx, norm = quant_mse(x, Pi, centroids)
+    x_mse_hat = dequant_mse(idx, norm, Pi, centroids)
+    r = x - x_mse_hat
+    gamma = l2_norm(r)
+    qjl = sign(S @ normalize_if_needed(r))
+    return idx, norm, qjl, gamma
+
+dequant_prod(idx, norm, qjl, gamma, Pi, centroids, S, d):
+    x_mse_hat = dequant_mse(idx, norm, Pi, centroids)
+    r_hat = sqrt(pi / 2) / d * gamma * (S.T @ qjl)
+    return x_mse_hat + r_hat</pre>
+
+      <div class="warning">
+        <strong>注意：</strong><br />
+        这里是“帮助理解”的最小伪代码，不是论文原样抄写，也不是直接可上线的高性能实现。
+        真正工程实现时，你还要考虑批处理、矩阵布局、SIMD / GPU kernel、码字存储格式、以及随机矩阵的生成和复用。
+      </div>
+    </section>
+
+    <section id="applications">
+      <h2>7. 具体怎么应用</h2>
+
+      <h3>7.1 用在 KV cache</h3>
+      <p>
+        这是最典型的应用。大模型在生成时，每个 token 都会产生新的 key / value 向量。
+        上下文越长，这些向量越多，显存和带宽压力越大。
+      </p>
+      <ol>
+        <li>每生成一个 token，就会得到新的 KV 向量。</li>
+        <li>你可以立即把它们量化存起来，而不是保留全精度。</li>
+        <li>后续 attention 读取时，再临时解码或直接基于量化表示做点积近似。</li>
+      </ol>
+      <p>
+        如果你的目标是尽量保持 attention 分数稳定，那么更应该用 <code>TurboQuantprod</code>，
+        因为 attention 本质上依赖点积。
+      </p>
+
+      <h3>7.2 用在向量检索 / ANN</h3>
+      <p>
+        假设你有海量 embedding，要做 top-k 检索。
+      </p>
+      <ol>
+        <li>先把数据库中的每个向量量化。</li>
+        <li>存储时只保留紧凑表示。</li>
+        <li>查询时，把 query 和量化后的向量做近似点积。</li>
+        <li>按得分排序，返回候选。</li>
+      </ol>
+      <p>
+        对检索任务，点积排序是否稳定往往比“重建后的向量肉眼看起来像不像”更重要，
+        所以这里通常也优先考虑 <code>TurboQuantprod</code>。
+      </p>
+
+      <h3>7.3 用在一般 embedding 存储</h3>
+      <p>
+        如果你的需求只是“把 embedding 存小一点，以后还能恢复出一个近似版本”，
+        那么 <code>TurboQuantmse</code> 往往已经够用，尤其是在 bit-width 不太低的时候。
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>场景</th>
+            <th>更推荐的版本</th>
+            <th>原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>KV cache / attention</td>
+            <td><code>TurboQuantprod</code></td>
+            <td>核心是点积。</td>
+          </tr>
+          <tr>
+            <td>向量检索 / ANN</td>
+            <td><code>TurboQuantprod</code></td>
+            <td>核心是相似度排序。</td>
+          </tr>
+          <tr>
+            <td>一般压缩存储</td>
+            <td><code>TurboQuantmse</code></td>
+            <td>更简单，重建误差更直观。</td>
+          </tr>
+          <tr>
+            <td>离线缓存、重构使用</td>
+            <td><code>TurboQuantmse</code></td>
+            <td>直接面向重建质量。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="choose">
+      <h2>8. 怎么选参数和版本</h2>
+
+      <h3>8.1 先决定任务目标</h3>
+      <ul>
+        <li>如果你最在乎 <strong>向量重建</strong>，选 <code>TurboQuantmse</code>。</li>
+        <li>如果你最在乎 <strong>点积 / 相似度 / attention</strong>，选 <code>TurboQuantprod</code>。</li>
+      </ul>
+
+      <h3>8.2 bit-width 怎么选</h3>
+      <ul>
+        <li><code>2 bit</code>：压缩激进，适合特别缺显存或极端低存储预算的场景。</li>
+        <li><code>3 bit</code> 到 <code>4 bit</code>：通常是更平衡的区间。</li>
+        <li>更高 bit-width：误差更低，但压缩收益开始递减。</li>
+      </ul>
+
+      <h3>8.3 需要不要存向量范数</h3>
+      <p>
+        论文分析常把输入看成单位范数向量。工程里如果你的向量范数差异很大，
+        一个简单做法是先存 <code>norm</code>，把单位方向做量化，解码后再乘回去。
+      </p>
+
+      <h3>8.4 什么时候要考虑 outlier 通道</h3>
+      <p>
+        如果你发现某些通道特别大、特别敏感，可以像论文实验里那样给 outlier 通道更多 bit，
+        其他通道更少 bit。这就是为什么会出现 <code>2.5 bit</code>、<code>3.5 bit</code> 这种“平均位宽”。
+      </p>
+
+      <div class="note">
+        <strong>一个实用决策规则：</strong><br />
+        先从 <code>TurboQuantprod + 3~4 bit</code> 开始做基线。如果质量够了，再往下压 bit。
+      </div>
+    </section>
+
+    <section id="pitfalls">
+      <h2>9. 常见坑</h2>
+      <ol>
+        <li>
+          <strong>把低 MSE 当成万能指标。</strong><br />
+          如果你的任务是检索或 attention，只看重建误差很容易误判效果。
+        </li>
+        <li>
+          <strong>忘了随机旋转是方法核心。</strong><br />
+          不是“任何逐维量化都一样”，TurboQuant 的关键就在于先把分布打匀。
+        </li>
+        <li>
+          <strong>线上每次都重新生成随机矩阵。</strong><br />
+          实际上应固定并复用同一套变换，否则编码和解码根本对不上。
+        </li>
+        <li>
+          <strong>忽略范数信息。</strong><br />
+          如果数据范数差异大，只量化方向而不保存尺度，会额外损失信息。
+        </li>
+        <li>
+          <strong>只看压缩率，不看 latency。</strong><br />
+          真正落地时，量化速度、解码速度、批处理吞吐量同样重要。
+        </li>
+      </ol>
+
+      <div class="warning">
+        <strong>最容易踩的坑：</strong><br />
+        在“点积决定结果”的任务里，用了更简单的 <code>TurboQuantmse</code>，然后发现排序或 attention 分数偏了。
+        这时问题不一定是 bit 不够，而可能是你选错了版本。
+      </div>
+    </section>
+
+    <section id="takeaway">
+      <h2>10. 最后记住什么</h2>
+      <ol>
+        <li>TurboQuant 的核心不是复杂码本，而是“随机旋转 + 简单逐维量化”。</li>
+        <li><code>TurboQuantmse</code> 面向重建误差，<code>TurboQuantprod</code> 面向点积质量。</li>
+        <li>如果你的下游任务依赖相似度排序、attention、ANN，优先想点积，而不是只想 MSE。</li>
+        <li>它适合在线场景，因为不需要像很多传统方法那样先做重训练或重建索引。</li>
+      </ol>
+
+      <div class="success">
+        <strong>给初学者的最终版本：</strong><br />
+        把 TurboQuant 想成“先打散，再压缩；如果任务靠点积，就给残差加一个专门的无偏修正层”。
+        记住这句话，你已经抓住这篇论文最重要的部分了。
+      </div>
+    </section>
+  </main>
+
+  <footer class="container">
+    Tutorial saved as `papers/tirboquant_tutorial.html`. This page is intentionally beginner-friendly and focuses on intuition, implementation path, and practical usage.
+  </footer>
+</body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paper Reading Hub</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --border: #dbe3f0;
+      --shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+      --note-bg: #eef6ff;
+      --note-border: #60a5fa;
+      --warn-bg: #fff7ed;
+      --warn-border: #fb923c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #edf4ff 0%, var(--bg) 240px);
+      color: var(--text);
+      line-height: 1.72;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      width: min(980px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 56px 0 24px;
+    }
+
+    .hero {
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(219, 227, 240, 0.95);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.28;
+      margin: 0 0 14px;
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: clamp(30px, 4vw, 42px);
+    }
+
+    h2 {
+      font-size: 28px;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-top: 28px;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    nav {
+      margin: 24px 0 36px;
+    }
+
+    .toc,
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .toc {
+      border-radius: 20px;
+    }
+
+    .toc ul {
+      margin: 0;
+      padding-left: 20px;
+      columns: 2;
+      column-gap: 32px;
+    }
+
+    .toc li {
+      margin: 0 0 10px;
+      break-inside: avoid;
+    }
+
+    main {
+      padding-bottom: 56px;
+    }
+
+    section {
+      margin-bottom: 24px;
+    }
+
+    .lead {
+      font-size: 18px;
+      color: #344054;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 15px;
+      margin-top: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: #f8fbff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 14px;
+    }
+
+    .note,
+    .warning {
+      border-left: 5px solid;
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin: 18px 0;
+    }
+
+    .note {
+      background: var(--note-bg);
+      border-color: var(--note-border);
+    }
+
+    .warning {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+    }
+
+    ul, ol {
+      margin: 0 0 16px;
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    pre {
+      margin: 18px 0 0;
+      padding: 18px;
+      border-radius: 16px;
+      background: #0f172a;
+      color: #e5eefb;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    footer {
+      color: var(--muted);
+      padding: 0 0 48px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .hero,
+      .toc,
+      section {
+        padding: 22px;
+      }
+
+      .toc ul {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="hero">
+        <span class="eyebrow">Static Portal</span>
+        <h1>Paper Reading Hub</h1>
+        <p class="lead">
+          这是一个静态入口页，用来统一访问 `papers/` 目录中的论文 PDF、已生成的 HTML 报告，以及 `read_paper.md`
+          中的报告生成规范。
+        </p>
+        <p class="meta">
+          用法：先从下方进入具体论文或报告，再参考页面底部的 `read_paper.md` 规范了解报告格式与数据溯源要求。
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="container">
+    <div class="toc">
+      <h2>目录</h2>
+      <ul>
+        <li><a href="#reports">1. 已生成的 HTML 报告</a></li>
+        <li><a href="#papers">2. 原始论文 PDF</a></li>
+        <li><a href="#workflow">3. 使用方式</a></li>
+        <li><a href="#read-paper">4. read_paper.md 内容</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="reports">
+      <h2>1. 已生成的 HTML 报告</h2>
+      <div class="grid">
+        <article class="card">
+          <strong>PEARL 报告</strong>
+          <p>连续滚动式 HTML 学术报告，聚焦个性化流式视频理解与 PEARL-Bench。</p>
+          <div class="actions">
+            <a class="button" href="papers/PEARL-%20Personalized%20Streaming%20Video%20Understanding%20Model.html">打开 HTML 报告</a>
+            <a class="button" href="papers/PEARL-%20Personalized%20Streaming%20Video%20Understanding%20Model.pdf">打开原论文 PDF</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <strong>LongVILA 报告</strong>
+          <p>连续滚动式 HTML 学术报告，覆盖五阶段训练流程、MM-SP 系统与长视频实验。</p>
+          <div class="actions">
+            <a class="button" href="papers/LongVILA%20Scaling%20Long-Context%20Visual%20Language%20Models%20for%20Long%20Videos.html">打开 HTML 报告</a>
+            <a class="button" href="papers/LongVILA%20Scaling%20Long-Context%20Visual%20Language%20Models%20for%20Long%20Videos.pdf">打开原论文 PDF</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="note">
+        <strong>说明：</strong><br />
+        这个首页当前列出工作区中可直接访问的 HTML 报告与 PDF。后续新增论文时，可以按同样格式继续往这里添加入口卡片。
+      </div>
+    </section>
+
+    <section id="papers">
+      <h2>2. 原始论文 PDF</h2>
+      <div class="grid">
+        <article class="card">
+          <strong>PEARL 原论文</strong>
+          <p>`PEARL- Personalized Streaming Video Understanding Model.pdf`</p>
+          <div class="actions">
+            <a class="button" href="papers/PEARL-%20Personalized%20Streaming%20Video%20Understanding%20Model.pdf">打开 PDF</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <strong>LongVILA 原论文</strong>
+          <p>`LongVILA Scaling Long-Context Visual Language Models for Long Videos.pdf`</p>
+          <div class="actions">
+            <a class="button" href="papers/LongVILA%20Scaling%20Long-Context%20Visual%20Language%20Models%20for%20Long%20Videos.pdf">打开 PDF</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="workflow">
+      <h2>3. 使用方式</h2>
+      <ol>
+        <li>先点击某篇论文的 PDF，确认论文原文。</li>
+        <li>再点击对应的 HTML 报告，阅读中文整理版分析。</li>
+        <li>如果要继续生成新的论文报告，可参考下方 `read_paper.md` 的格式要求。</li>
+      </ol>
+
+      <div class="warning">
+        <strong>注意：</strong><br />
+        `read_paper.md` 里最关键的要求之一，是报告必须单独写清楚训练/测试数据来源、规模、划分与预处理，并在关键结论后标注论文原文位置。
+      </div>
+    </section>
+
+    <section id="read-paper">
+      <h2>4. read_paper.md 内容</h2>
+      <p>
+        下面是当前 `read_paper.md` 的主要内容，方便你直接从首页查看生成规范。
+      </p>
+      <pre># Role
+你是一位学术报告专家兼前端开发工程师。请精读我上传的 PDF 论文，并制作一份结构清晰、内容详实的 连续滚动式 HTML 报告。
+
+# Task
+1. 深入分析论文的核心内容，覆盖背景、方法、实验、结论等方方面面。
+2. 将内容转化为一个独立的、自包含的 HTML 文件（包含内嵌 CSS）。
+3. 页面设计需适合阅读（而非投影），支持上下滚动浏览所有信息。
+
+# Content Requirements
+1. 主要解释使用中文，但专业名词、术语、变量名、缩写必须保留原始英文。
+2. 在关键观点、数据、公式或图表描述后，务必标注原文对应的位置。
+3. 内容要全面，逻辑分层清晰，使用 H1 / H2 / H3 标题。
+4. 数据溯源必须单独列出：
+   - 数据集名称及官方链接/引用
+   - 数据规模
+   - 数据采集方式
+   - 数据划分策略
+   - 预处理/增强方法
+   - 多实验场景要分别说明，避免混淆
+   - 若原文未明确说明，要标注“⚠️ 原文未明确”
+
+# Layout & Design
+1. 使用语义化 HTML 标签。
+2. 不要用幻灯片分页结构，要做成连续长页面。
+3. 建议顶部添加目录导航。
+4. 主体内容区域应限制最大宽度并居中显示。
+5. 所有 CSS 内嵌，保证离线可用。
+
+# Output Format
+1. 输出到 papers/ 文件夹。
+2. 文件名使用原始论文名（不含扩展名）。
+3. 浏览器打开后应直接呈现整洁的文档报告效果。</pre>
+      <div class="actions">
+        <a class="button" href="read_paper.md">打开原始 read_paper.md</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container">
+    Static index saved as `index.html`.
+  </footer>
+</body>
+</html>

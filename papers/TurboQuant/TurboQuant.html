@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --border: #dbe3f0;
+      --source-bg: #eef6ff;
+      --source-border: #60a5fa;
+      --warn-bg: #fff7ed;
+      --warn-border: #fb923c;
+      --ok-bg: #ecfdf3;
+      --ok-border: #4ade80;
+      --shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #edf4ff 0%, var(--bg) 240px);
+      color: var(--text);
+      line-height: 1.72;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      width: min(920px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 56px 0 24px;
+    }
+
+    .hero {
+      background: rgba(255, 255, 255, 0.84);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(219, 227, 240, 0.95);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.28;
+      margin: 0 0 14px;
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: clamp(30px, 4vw, 42px);
+    }
+
+    h2 {
+      font-size: 28px;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-top: 28px;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    .lead {
+      font-size: 18px;
+      color: #344054;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 15px;
+      margin-top: 16px;
+    }
+
+    nav {
+      margin: 24px 0 36px;
+    }
+
+    .toc {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .toc ul {
+      margin: 0;
+      padding-left: 20px;
+      columns: 2;
+      column-gap: 32px;
+    }
+
+    .toc li {
+      margin: 0 0 10px;
+      break-inside: avoid;
+    }
+
+    main {
+      padding-bottom: 56px;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: #f8fbff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      margin-left: 6px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .source-note,
+    .warning-note,
+    .success-note {
+      border-left: 5px solid;
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin: 18px 0;
+    }
+
+    .source-note {
+      background: var(--source-bg);
+      border-color: var(--source-border);
+    }
+
+    .warning-note {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+    }
+
+    .success-note {
+      background: var(--ok-bg);
+      border-color: var(--ok-border);
+    }
+
+    .citation {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    ul, ol {
+      margin: 0 0 16px;
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 15px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    footer {
+      color: var(--muted);
+      padding: 0 0 48px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .hero,
+      section,
+      .toc {
+        padding: 22px;
+      }
+
+      .toc ul {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="hero">
+        <span class="eyebrow">Paper Report</span>
+        <h1>TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate</h1>
+        <p class="lead">
+          这篇论文的核心贡献是提出 <strong>TurboQuant</strong>：一个 <strong>data-oblivious</strong>、适合
+          <strong>online application</strong>、并且对 accelerator 友好的高维 <strong>vector quantization</strong> 方法。
+          它通过“随机旋转 + 逐坐标最优 scalar quantization”处理 <strong>MSE</strong>，再通过
+          “对 residual 做 1-bit <strong>QJL</strong>”获得无偏的 <strong>inner product</strong> 估计，从而在理论上把失真率做到接近信息论下界，
+          在实验上同时覆盖 KV cache quantization 与 nearest neighbor search 两类应用。
+          <span class="citation">(Page 1, Abstract; Page 2-3, Introduction; Page 12-14, Theorem 2 and Theorem 3)</span>
+        </p>
+        <p class="meta">
+          Authors: Amir Zandieh, Majid Daliri, Majid Hadian, Vahab Mirrokni |
+          arXiv:2504.19874v1 |
+          Affiliation: Google Research, New York University, Google DeepMind
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="container">
+    <div class="toc">
+      <h2>目录</h2>
+      <ul>
+        <li><a href="#summary">1. 一句话总结与核心判断</a></li>
+        <li><a href="#background">2. 背景、问题定义与动机</a></li>
+        <li><a href="#method">3. 方法总览</a></li>
+        <li><a href="#theory">4. 理论部分详解</a></li>
+        <li><a href="#experiments">5. 实验结果解读</a></li>
+        <li><a href="#data">6. 数据溯源专项说明</a></li>
+        <li><a href="#insights">7. 亮点、适用场景与工程价值</a></li>
+        <li><a href="#limitations">8. 局限与风险</a></li>
+        <li><a href="#conclusion">9. 结论</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="summary">
+      <h2>1. 一句话总结与核心判断</h2>
+      <p>
+        如果把这篇论文压缩成一句话，那么它做的是：<strong>把“高维向量量化”拆成一个极其简单却接近最优的 pipeline</strong>，
+        先用随机旋转把任意 worst-case 向量变成坐标近似独立、近似 Beta / Gaussian 的形式，再按每个坐标做最优标量量化；
+        当任务目标是 inner product 而不是 MSE 时，再在 residual 上补一层 1-bit 的无偏修正。这样既保留了理论保证，又避免了传统
+        codebook learning / k-means 方案的离线训练与高索引成本。 <span class="citation">(Page 2-5, Introduction and Contributions; Page 9-13, Section 3.1-3.2)</span>
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <strong>核心思想</strong>
+          随机旋转把输入变成“坐标可独立处理”的形态，然后逐坐标量化。 <span class="citation">(Page 9, Section 3.1)</span>
+        </div>
+        <div class="card">
+          <strong>MSE 版本</strong>
+          使用最优 1D Lloyd-Max / continuous k-means codebook，达到接近最优的 <code>4^-b</code> 失真率。 <span class="citation">(Page 9-11, Algorithm 1 and Theorem 1)</span>
+        </div>
+        <div class="card">
+          <strong>Inner Product 版本</strong>
+          用 <code>b-1</code> bit 的 <code>TurboQuantmse</code> 压掉大部分能量，再用 1-bit <code>QJL</code> 编码 residual，保证无偏。 <span class="citation">(Page 8, Section 2.2; Page 11-13, Algorithm 2 and Theorem 2)</span>
+        </div>
+        <div class="card">
+          <strong>实验结论</strong>
+          在 KV cache quantization 中 3.5 bits / channel 可做到质量中性，在 NN search 中 recall 更好且 indexing 时间几乎为零。 <span class="citation">(Page 1, Abstract; Page 17-20, Section 4.2-4.4)</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="background">
+      <h2>2. 背景、问题定义与动机</h2>
+      <p>
+        论文讨论的是高维 Euclidean vector 的压缩问题：给定一个量化映射 <code>Q : R^d -&gt; {0,1}^B</code>，在总比特预算
+        <code>B = b · d</code> 下，把原始向量压缩为低 bit-width 表示，同时希望解码后的向量仍尽可能保留几何结构。这里作者重点关心两个失真目标：
+        <strong>MSE distortion</strong> 与 <strong>inner product distortion</strong>。前者关心重建误差，后者关心量化后是否还能准确做点积估计。
+        <span class="citation">(Page 3, Section 1.1, Eq. 1-2)</span>
+      </p>
+      <p>
+        这个问题在三类场景尤其关键。第一类是 LLM / deep learning 中的权重和 activation 压缩，因为核心计算本质上就是 inner product。
+        第二类是 decoder-only transformer 的 <strong>KV cache</strong> 压缩，因为 context 长度增长会直接推高显存和带宽压力。
+        第三类是 <strong>nearest neighbor search</strong> / vector database，需要在压缩索引后仍保留高召回率。作者认为现有方法通常在
+        “理论最优性、在线能力、GPU/accelerator 友好度”三者之间存在取舍，而 TurboQuant 的目标是把三者尽量统一起来。
+        <span class="citation">(Page 1-2, Introduction)</span>
+      </p>
+
+      <div class="success-note">
+        <strong>作者想解决的不是一般意义上的“量化能不能用”，而是：</strong><br />
+        能否设计一种无需离线训练、无需数据适配、可以在线即插即用、同时在失真率上接近信息论下界的高维向量量化算法。
+        <span class="citation">(Page 2, Introduction; Page 5, Contributions)</span>
+      </div>
+    </section>
+
+    <section id="method">
+      <h2>3. 方法总览</h2>
+      <p>
+        TurboQuant 有两个版本：<strong>TurboQuantmse</strong> 面向最小化 MSE，<strong>TurboQuantprod</strong> 面向无偏 inner product estimation。
+        两个版本共享的第一个关键动作是 <strong>random rotation</strong>。给定单位球面上的向量 <code>x ∈ S^(d-1)</code>，算法先用随机正交矩阵
+        <code>Π</code> 旋转它，使得 <code>Πx</code> 近似服从“各坐标同分布、近似独立”的形式；单个坐标服从球面坐标诱导的 Beta 分布，在高维下又近似高斯。
+        这一步把原本困难的高维 VQ 问题，变成了可分解的逐坐标 scalar quantization 问题。 <span class="citation">(Page 6, Lemma 1; Page 9, Section 3.1)</span>
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <strong>Step 1: Random Rotation</strong>
+          用随机旋转打散 worst-case 结构，让坐标分布集中且近似独立。 <span class="citation">(Page 6, Lemma 1; Page 9, lines 471-477)</span>
+        </div>
+        <div class="card">
+          <strong>Step 2: Scalar Quantization</strong>
+          对每个坐标用最优 1D codebook 做最近邻映射，codebook 可离线预计算。 <span class="citation">(Page 9-10, Eq. 4 and Algorithm 1)</span>
+        </div>
+        <div class="card">
+          <strong>Step 3: Residual QJL</strong>
+          若目标是 inner product，则对 residual 追加 1-bit <code>QJL</code>，用它修正 MSE 量化的偏差。 <span class="citation">(Page 8, Section 2.2; Page 11-13, Algorithm 2)</span>
+        </div>
+        <div class="card">
+          <strong>工程特点</strong>
+          不依赖数据分布学习 codebook，不需要 heavy preprocessing，适合 online pipeline。 <span class="citation">(Page 4, Section 1.2; Page 5, Introduction)</span>
+        </div>
+      </div>
+
+      <h3>3.1 TurboQuantmse：为什么随机旋转后可以逐坐标做最优量化？</h3>
+      <p>
+        作者的关键观察是：如果 <code>x</code> 经随机旋转后落到单位球面均匀分布，那么任意坐标的边缘分布可以写成显式的 Beta 形式，
+        在高维下收敛到 <code>N(0, 1/d)</code>。更重要的是，不同坐标之间变得“近似独立”，因此无需像传统 VQ / PQ 那样学习复杂的块级 codebook，
+        只要对每个坐标单独做最优标量量化即可获得接近最优的整体失真。 <span class="citation">(Page 6, Lemma 1; Page 9, Section 3.1)</span>
+      </p>
+      <p>
+        对单坐标而言，最优量化可表述为一个 1D continuous k-means 问题，目标是在区间 <code>[-1, 1]</code> 上找到
+        <code>2^b</code> 个 centroids，使积分意义下的平方误差最小。作者用 Max-Lloyd / Lloyd-Max 数值法预先算出各 bit-width 的 codebook，
+        之后在线阶段只需做“旋转、查最近 centroid、记录索引、反旋转”即可。 <span class="citation">(Page 9-10, Eq. 4; Algorithm 1)</span>
+      </p>
+
+      <h3>3.2 TurboQuantprod：为什么 MSE 最优不等于 inner product 最优？</h3>
+      <p>
+        论文强调：即使一个量化器在 MSE 上表现很好，它对 inner product estimation 仍可能存在系统偏差。作者给出的直观例子是 1-bit 情况：
+        当 <code>b = 1</code> 时，<code>TurboQuantmse</code> 本质上变成对旋转后坐标取符号再按固定尺度反解，这会产生约 <code>2/π</code> 的乘性偏差，
+        因而不是无偏估计器。 <span class="citation">(Page 11-12, Section 3.2, lines 636-655)</span>
+      </p>
+      <p>
+        为了修复这个问题，作者把 bit budget 分成两段：先用 <code>b-1</code> bit 的 <code>TurboQuantmse</code> 获得一个低残差近似，
+        再把 residual 向量送入 1-bit 的 <code>QJL</code>。由于 QJL 对 inner product 是无偏的，因此“低误差近似 + 无偏残差估计”组合起来后，
+        总体估计既无偏，又能继承 residual 很小所带来的低方差。 <span class="citation">(Page 8, Lemma 4; Page 11-13, Algorithm 2 and Theorem 2)</span>
+      </p>
+    </section>
+
+    <section id="theory">
+      <h2>4. 理论部分详解</h2>
+      <h3>4.1 MSE 上界</h3>
+      <p>
+        对任意单位范数向量，<code>TurboQuantmse</code> 的总 MSE 满足
+        “与 <code>4^-b</code> 成比例衰减”的失真率；论文给出的主上界是
+        <strong>至多比信息论最优值差一个约 2.7 的常数因子</strong>。对小 bit-width，作者还给出更细的数值：
+        <code>b = 1, 2, 3, 4</code> 时，MSE 分别约为 <code>0.36</code>、<code>0.117</code>、<code>0.03</code>、<code>0.009</code>。
+        这说明在低比特区间它已经相当接近下界。 <span class="citation">(Page 10-11, Theorem 1)</span>
+      </p>
+
+      <h3>4.2 Inner Product 上界与无偏性</h3>
+      <p>
+        对 <code>TurboQuantprod</code>，作者证明其对任意查询向量 <code>y</code> 都是 <strong>unbiased</strong> 的，
+        且 inner product distortion 同样按 <code>4^-b</code> 衰减，只是多了一个与 <code>||y||^2 / d</code> 相关的尺度因子。
+        对小 bit-width，论文报告 <code>b = 1, 2, 3, 4</code> 时的误差约为
+        <code>1.57/d</code>、<code>0.56/d</code>、<code>0.18/d</code>、<code>0.047/d</code>。
+        <span class="citation">(Page 12-13, Theorem 2)</span>
+      </p>
+
+      <h3>4.3 下界证明为什么重要</h3>
+      <p>
+        只给上界还不够，因为可能只是分析宽松。论文在 Section 3.3 里用 <strong>Yao's minimax principle</strong> 与
+        <strong>Shannon Lower Bound</strong> 证明：任何 bit-width 为 <code>b</code> 的随机量化算法，在 worst-case 输入下，
+        MSE 至少是 <code>4^-b</code> 量级，inner product distortion 至少是 <code>(1/d) · 4^-b</code> 量级。
+        这让 TurboQuant 的意义变得非常明确：它不是“一个经验上还不错的工程 trick”，而是和最优量级已经非常接近。 <span class="citation">(Page 7, Lemma 3; Page 13-14, Theorem 3)</span>
+      </p>
+
+      <div class="success-note">
+        <strong>论文最强的理论信息：</strong><br />
+        TurboQuant 的关键优势不是单一 benchmark 上赢了，而是它在所有 bit-width 下都保持了正确的失真率阶数，
+        这使它比很多 data-dependent 或 heuristics 方法更“可解释、可预测、可部署”。
+        <span class="citation">(Page 5, Contributions; Page 13-14, Theorem 3)</span>
+      </div>
+
+      <h3>4.4 与传统 PQ / codebook 学习方法的本质差异</h3>
+      <p>
+        传统 <strong>Product Quantization (PQ)</strong> 通常需要在数据集上运行 k-means 学 codebook，并在索引阶段进行大量预处理，
+        这会带来显著的 preprocessing / indexing cost，也让方法不适合在线场景。TurboQuant 的 codebook 则来自已知球面坐标分布的最优标量量化，
+        不针对具体数据集训练；在线阶段只要做矩阵乘法、最近 centroid 查找和符号操作，天然更容易 vectorize，也更适合 GPU。
+        <span class="citation">(Page 4, Section 1.2; Page 19-20, Section 4.4)</span>
+      </p>
+    </section>
+
+    <section id="experiments">
+      <h2>5. 实验结果解读</h2>
+      <h3>5.1 Empirical Validation：理论和实际曲线是否一致？</h3>
+      <p>
+        论文先用 DBpedia Entities 的 OpenAI3 embedding 数据验证理论。结果显示，<code>TurboQuantprod</code> 在所有 bit-width 下都保持无偏，
+        而 <code>TurboQuantmse</code> 在用于 inner product 估计时确实存在偏差，但 bit-width 上升后偏差逐渐减小。Figure 2 进一步说明：
+        在 <code>b = 2</code> 时，<code>TurboQuantprod</code> 的误差方差几乎不随平均 inner product 改变，而 <code>TurboQuantmse</code> 的偏差会随平均点积增加而变大。
+        <span class="citation">(Page 15-16, Section 4.1; Figure 1; Figure 2)</span>
+      </p>
+      <p>
+        Figure 3 把实验曲线和理论上、下界画在一起。结论很清晰：在低 bit 区间，<code>TurboQuantprod</code> 更适合做 inner product estimation；
+        当 bit 数继续增加时，<code>TurboQuantmse</code> 的偏差逐步趋近于零，最终也会变得非常强。这说明“是否需要无偏性”与“bit budget 多大”之间存在任务依赖的 trade-off。
+        <span class="citation">(Page 16-18, Figure 3 and surrounding discussion)</span>
+      </p>
+
+      <h3>5.2 Needle-In-A-Haystack：长上下文检索是否受损？</h3>
+      <p>
+        在长上下文“针找草堆”测试中，作者使用 <code>Llama-3.1-8B-Instruct</code>，把文档长度从 <code>4k</code> 拉到 <code>104k</code> token，
+        并统一在 <code>memory compression ratio = 0.25</code> 的设定下比较 TurboQuant、PolarQuant、SnapKV、PyramidKV、KIVI 等方法。
+        结论是：具有理论保证的 quantization 方法整体优于 token-level compression；其中 TurboQuant 在 4× 压缩下依然达到与
+        full-precision 相同的 recall 分数 <code>0.997</code>。 <span class="citation">(Page 16-17, Section 4.2; Figure 4)</span>
+      </p>
+
+      <h3>5.3 LongBench：端到端生成任务还能否保持质量？</h3>
+      <p>
+        在 <strong>LongBench-E</strong> 上，作者同时评估了 <code>Llama-3.1-8B-Instruct</code> 与 <code>Ministral-7B-Instruct</code>。
+        他们强调 TurboQuant 连生成过程中新增 token 的 KV 也继续量化，而部分基线方法会把新生成 token 保持为全精度。即便如此，
+        TurboQuant 仍然在低 bit-width 下维持很强表现。 <span class="citation">(Page 18, Section 4.3)</span>
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>模型</th>
+            <th>方法</th>
+            <th>KV Size</th>
+            <th>Average Score</th>
+            <th>解读</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Llama-3.1-8B-Instruct</td>
+            <td>Full Cache</td>
+            <td>16</td>
+            <td>50.06</td>
+            <td>全精度基线。 <span class="citation">(Page 19, Table 1)</span></td>
+          </tr>
+          <tr>
+            <td>Llama-3.1-8B-Instruct</td>
+            <td>TurboQuant</td>
+            <td>2.5</td>
+            <td>49.44</td>
+            <td>显著压缩下仍接近全精度。 <span class="citation">(Page 19, Table 1)</span></td>
+          </tr>
+          <tr>
+            <td>Llama-3.1-8B-Instruct</td>
+            <td>TurboQuant</td>
+            <td>3.5</td>
+            <td>50.06</td>
+            <td>达到质量中性。 <span class="citation">(Page 19, Table 1)</span></td>
+          </tr>
+          <tr>
+            <td>Ministral-7B-Instruct</td>
+            <td>Full Cache</td>
+            <td>16</td>
+            <td>49.89</td>
+            <td>全精度基线。 <span class="citation">(Page 19, Table 1)</span></td>
+          </tr>
+          <tr>
+            <td>Ministral-7B-Instruct</td>
+            <td>TurboQuant</td>
+            <td>2.5</td>
+            <td>49.62</td>
+            <td>仅轻微下降。 <span class="citation">(Page 19, Table 1)</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        非整数 bit-width 的实现方式也值得注意：作者把 channel 分成 outlier 和 non-outlier 两组，分别应用两套 TurboQuant。
+        例如 2.5-bit 设定里，128 个 channel 中有 32 个用 3 bits，96 个用 2 bits，于是得到等效精度 2.5。作者认为这和此前量化文献中的 outlier 处理策略一致。
+        <span class="citation">(Page 18, Section 4.3, lines 1073-1081)</span>
+      </p>
+
+      <h3>5.4 Near Neighbor Search：召回率和索引时间是否兼得？</h3>
+      <p>
+        在 NN search 实验中，TurboQuant 与 <strong>PQ</strong> 和 <strong>RabitQ</strong> 做对比。作者指出，
+        PQ 需要训练 codebook，RabitQ 又缺少 fully vectorized 实现，二者都存在索引或执行成本。尽管在实验设定上 PQ 甚至还因为“训练集和评估集相同”而占了便宜，
+        TurboQuant 依然在不同维度、不同 bit-width 下 consistently 获得更好的 recall。 <span class="citation">(Page 19-20, Section 4.4; Figure 5)</span>
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Approach</th>
+            <th>d = 200</th>
+            <th>d = 1536</th>
+            <th>d = 3072</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Product Quantization</td>
+            <td>37.04 s</td>
+            <td>239.75 s</td>
+            <td>494.42 s</td>
+          </tr>
+          <tr>
+            <td>RabitQ</td>
+            <td>597.25 s</td>
+            <td>2267.59 s</td>
+            <td>3957.19 s</td>
+          </tr>
+          <tr>
+            <td>TurboQuant</td>
+            <td>0.0007 s</td>
+            <td>0.0013 s</td>
+            <td>0.0021 s</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="citation">(Page 19-20, Table 2)</p>
+      <p>
+        这张表几乎是工程价值的直接证明：TurboQuant 不只是“理论漂亮”，它在 quantization time 上呈现出数量级优势，几乎可以视作即时索引。
+        这也是作者强调它适合 <strong>online vector search</strong> 和 <strong>dynamic data scenarios</strong> 的原因。 <span class="citation">(Page 4, Section 1.2; Page 19-20, Table 2)</span>
+      </p>
+    </section>
+
+    <section id="data">
+      <h2>6. 数据溯源专项说明 <span class="badge">重点</span></h2>
+
+      <div class="source-note">
+        <strong>总览：</strong>
+        这篇论文的实验覆盖四类数据或 benchmark：<strong>DBpedia Entities + OpenAI3 embeddings</strong>、
+        <strong>Needle-In-A-Haystack</strong> 长上下文测试、<strong>LongBench / LongBench-E</strong>、
+        以及 <strong>GloVe / DBpedia</strong> 驱动的 nearest neighbor search 数据。论文对不同实验的数据来源、采样规模和部分链接给出了不同程度的说明；
+        其中 DBpedia OpenAI3 数据的来源最明确，Needle-In-A-Haystack 的原始文本来源说明最弱。
+      </div>
+
+      <h3>6.1 实验一：Empirical Validation</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>项目</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>数据集名称</td>
+            <td>DBpedia Entities dataset，经 OpenAI3 embeddings 编码到 1536 维。 <span class="citation">(Page 15, Section 4.1)</span></td>
+          </tr>
+          <tr>
+            <td>官方链接 / 引用</td>
+            <td>论文在 Section 4.4 对同源 DBpedia OpenAI3 数据给出 footnote 链接：
+              <a href="https://huggingface.co/datasets/Qdrant/dbpedia-entities-openai3-text-embedding-3-large-1536-1M">1536-d DBpedia OpenAI3</a>。
+              对 Section 4.1 而言，可合理推断为同一来源，但该小节未再次显式重复链接。 <span class="citation">(Page 19, footnote 1; Page 15, Section 4.1)</span></td>
+          </tr>
+          <tr>
+            <td>数据规模</td>
+            <td>随机采样 100,000 个数据点作为 training set，另取 1,000 个不同条目作为 query set。 <span class="citation">(Page 15, Section 4.1)</span></td>
+          </tr>
+          <tr>
+            <td>采集方式</td>
+            <td>来自已有 DBpedia entity embedding 数据；论文只说“encoded into a 1536-dimensional space using OpenAI3 embeddings”，未展开原始文本采集流程。 <span class="citation">(Page 15, Section 4.1)</span></td>
+          </tr>
+          <tr>
+            <td>数据划分</td>
+            <td>显式使用 training set / query set 两部分；没有报告 train/val/test 传统监督划分。 <span class="citation">(Page 15, Section 4.1)</span></td>
+          </tr>
+          <tr>
+            <td>预处理 / 增强</td>
+            <td>明确预处理是使用 OpenAI3 embeddings 将实体编码到 1536 维；未报告额外 augmentation。 <span class="citation">(Page 15, Section 4.1)</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6.2 实验二：Needle-In-A-Haystack</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>项目</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>数据集名称</td>
+            <td>“Needle-In-A-Haystack Test”。 <span class="citation">(Page 16, Section 4.2)</span></td>
+          </tr>
+          <tr>
+            <td>官方链接 / 引用</td>
+            <td>引用 [32]，对应仓库链接：
+              <a href="https://github.com/gkamradt/LLMTest_NeedleInAHaystack">LLMTest_NeedleInAHaystack</a>。
+              实验设置遵循 Fu et al. [21]。 <span class="citation">(Page 16-17, Section 4.2; Reference 21; Reference 32)</span></td>
+          </tr>
+          <tr>
+            <td>数据规模</td>
+            <td>论文报告的是上下文长度范围 <code>4k</code> 到 <code>104k</code> token，而不是固定样本数。 <span class="citation">(Page 16-17, Section 4.2)</span></td>
+          </tr>
+          <tr>
+            <td>采集方式</td>
+            <td>⚠️ 原文未明确。论文只说明在长文档中插入一条唯一隐藏句子进行检索测试，并沿用现有工作 setup。 <span class="citation">(Page 16-17, Section 4.2)</span></td>
+          </tr>
+          <tr>
+            <td>数据划分</td>
+            <td>⚠️ 原文未明确。这里更像 benchmark protocol，而不是标准 train/val/test 数据划分。 <span class="citation">(Page 16-17, Section 4.2)</span></td>
+          </tr>
+          <tr>
+            <td>预处理 / 增强</td>
+            <td>通过在 haystack 中插入 needle 句子构造测试样本；压缩比统一设为 <code>0.25</code>。 <span class="citation">(Page 16-17, Section 4.2)</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6.3 实验三：LongBench / LongBench-E</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>项目</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>数据集名称</td>
+            <td>LongBench，以及其长度分布更均匀的子集 LongBench-E。 <span class="citation">(Page 18, Section 4.3)</span></td>
+          </tr>
+          <tr>
+            <td>官方链接 / 引用</td>
+            <td>引用 [10] LongBench。论文未在正文中给出直接下载 URL。 <span class="citation">(Page 18, Section 4.3; Page 21, Reference 10)</span></td>
+          </tr>
+          <tr>
+            <td>数据规模</td>
+            <td>论文未在本节重述样本数，但说明覆盖 single-document QA、multi-document QA、summarization、few-shot、synthetic、code completion 等多类长文本任务。 <span class="citation">(Page 18, Section 4.3)</span></td>
+          </tr>
+          <tr>
+            <td>采集方式</td>
+            <td>使用已有 benchmark；本论文不自行采集原始样本。 <span class="citation">(Page 18, Section 4.3)</span></td>
+          </tr>
+          <tr>
+            <td>数据划分</td>
+            <td>⚠️ 原文未明确说明 split 细节，沿用 LongBench / LongBench-E benchmark 协议。 <span class="citation">(Page 18, Section 4.3)</span></td>
+          </tr>
+          <tr>
+            <td>预处理 / 增强</td>
+            <td>选择 LongBench-E 以获得更均匀的长度分布；模型包括 <code>Llama-3.1-8B-Instruct</code> 与 <code>Ministral-7B-Instruct</code>。 <span class="citation">(Page 18-19, Section 4.3; Table 1)</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6.4 实验四：Near Neighbor Search</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>项目</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>数据集名称</td>
+            <td>DBpedia Entities 的 1536 维与 3072 维 OpenAI3 embeddings，以及标准 GloVe embeddings。 <span class="citation">(Page 19, Section 4.4)</span></td>
+          </tr>
+          <tr>
+            <td>官方链接 / 引用</td>
+            <td>
+              DBpedia 1536-d:
+              <a href="https://huggingface.co/datasets/Qdrant/dbpedia-entities-openai3-text-embedding-3-large-1536-1M">HuggingFace 链接</a><br />
+              DBpedia 3072-d:
+              <a href="https://huggingface.co/datasets/Qdrant/dbpedia-entities-openai3-text-embedding-3-large-3072-1M">HuggingFace 链接</a><br />
+              GloVe 通过引用 [45] 指出，正文未给直接 URL。 <span class="citation">(Page 19, footnotes 1-2; Section 4.4)</span>
+            </td>
+          </tr>
+          <tr>
+            <td>数据规模</td>
+            <td>从数据中随机采样 100,000 个点作为 training/evaluation set；若数据本身无 query set，则再抽取 1,000 个不同条目作为 query set。GloVe 使用预置的 10,000 条 query set。 <span class="citation">(Page 19, Section 4.4)</span></td>
+          </tr>
+          <tr>
+            <td>采集方式</td>
+            <td>来自已有 embedding 数据集；本论文主要研究量化与检索，不重新采集语料。 <span class="citation">(Page 19, Section 4.4)</span></td>
+          </tr>
+          <tr>
+            <td>数据划分</td>
+            <td>training/evaluation set 与 query set 显式区分；作者还指出 PQ 在“训练集和评估集相同”的条件下获得了额外优势。 <span class="citation">(Page 19-20, Section 4.4)</span></td>
+          </tr>
+          <tr>
+            <td>预处理 / 增强</td>
+            <td>DBpedia 数据已事先嵌入为 OpenAI3 向量；论文未报告额外 augmentation。 <span class="citation">(Page 19, Section 4.4)</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="warning-note">
+        <strong>数据说明中的主要缺口：</strong><br />
+        论文对“实验输入已经是什么 embedding / benchmark”交代得比较清楚，但对原始文本来源、许可、清洗流程、重复样本处理、以及更细的 split 协议说明不够统一。
+        尤其是 Needle-In-A-Haystack 与 LongBench 段落，更偏向 benchmark protocol 介绍，而不是严格的数据卡片。
+        <span class="citation">(Page 16-19, Section 4.2-4.3)</span>
+      </div>
+    </section>
+
+    <section id="insights">
+      <h2>7. 亮点、适用场景与工程价值</h2>
+      <h3>7.1 这篇论文真正“巧”的地方</h3>
+      <p>
+        论文最聪明的地方，是没有去正面学习一个复杂的全局向量码本，而是借助随机旋转把问题改造成一个“可分解”的坐标分布问题。
+        这让算法结构极简，但理论上又站得住。很多时候，真正可部署的算法不是最复杂的，而是能把 structure 利用到最彻底的那个。
+        <span class="citation">(Page 6, Lemma 1; Page 9-10, Section 3.1)</span>
+      </p>
+
+      <h3>7.2 为什么它对 LLM / 向量数据库都有吸引力</h3>
+      <p>
+        对 LLM 而言，TurboQuant 能直接作用于 KV cache 这类在线生成中的动态向量流；对向量数据库而言，它几乎没有 indexing latency，
+        这与必须先训练 codebook 的 PQ 路线形成鲜明对比。因此它最适合的不是“静态离线、预算宽松”的环境，而是
+        <strong>动态数据、实时系统、带宽和延迟都很敏感</strong> 的环境。 <span class="citation">(Page 2, Introduction; Page 17-20, Section 4.2-4.4)</span>
+      </p>
+
+      <h3>7.3 如何理解 3.5 bits / channel 的意义</h3>
+      <p>
+        论文在摘要和 LongBench 结果中强调：<code>3.5 bits / channel</code> 已可实现“absolute quality neutrality”或非常接近全精度。
+        这意味着在许多长上下文推理任务中，显存/带宽开销可以下降到原来的小部分，而输出质量几乎不受影响。若这一结论在更广泛模型族上成立，
+        它对实际 serving 成本会非常有吸引力。 <span class="citation">(Page 1, Abstract; Page 18-19, Section 4.3 and Table 1)</span>
+      </p>
+    </section>
+
+    <section id="limitations">
+      <h2>8. 局限与风险</h2>
+      <p>
+        第一，论文的理论建立在随机旋转后坐标近似独立、分布集中这些高维性质上，因此它天然更偏好高维 setting。
+        低维场景也做了实验，但理论叙事的主舞台仍是高维。 <span class="citation">(Page 6, Lemma 1; Page 9, Section 3.1; Page 19-20, Figure 5)</span>
+      </p>
+      <p>
+        第二，实验覆盖了 KV cache 和 NN search 两类强应用，但仍然主要集中在 embedding / inner-product 驱动场景。
+        对更广泛的权重量化、训练中量化、或跨分布迁移情况下的表现，本文没有系统展开。 <span class="citation">(Page 1-2, Introduction; Page 15-20, Section 4)</span>
+      </p>
+      <p>
+        第三，从数据报告角度看，作者对 benchmark 规模和链接给得不算少，但没有提供一套完全统一的数据卡片式说明。
+        如果要把论文转换成工业级复现实验文档，还需要补充许可证、预处理脚本、随机种子、重复样本处理等信息。 <span class="citation">(Page 15-20, Section 4)</span>
+      </p>
+
+      <div class="warning-note">
+        <strong>一个方法论上的提醒：</strong><br />
+        对 inner product 任务，不能只看 MSE。论文一个很重要的启发是：低 MSE 不自动意味着低偏差或无偏估计。
+        在检索、注意力、相似度计算等场景里，这个区分非常关键。 <span class="citation">(Page 11-13, Section 3.2; Figure 1-2)</span>
+      </div>
+    </section>
+
+    <section id="conclusion">
+      <h2>9. 结论</h2>
+      <p>
+        总体来看，TurboQuant 是一篇“理论与工程都比较完整”的论文。它在理论上给出了接近 Shannon lower bound 的失真率，
+        在算法上保持了非常简洁的结构，在应用上又覆盖了 LLM KV cache 与 ANN / vector search 这两个极具现实价值的场景。
+        最值得记住的不是某一个实验数值，而是它提出了一条很有普适性的路径：
+        <strong>先用随机变换把 worst-case 数据“规整化”，再把高维量化问题降解成可并行、可预计算、可证明的标量问题。</strong>
+        <span class="citation">(Page 1, Abstract; Page 5, Contributions; Page 13-14, Theorem 3; Page 17-20, Experiments)</span>
+      </p>
+      <p>
+        如果你的关注点是在线量化、动态索引、低延迟 ANN、或长上下文 LLM serving，那么这篇论文非常值得细读。它提供的不只是一个新算法，
+        更是一种把“高维统计结构”和“系统部署需求”连接起来的设计范式。 <span class="citation">(Page 2, Introduction; Page 19-20, Table 2 and Figure 5)</span>
+      </p>
+    </section>
+  </main>
+
+  <footer class="container">
+    Report generated from `papers/tirboquant.pdf` and saved as `papers/tirboquant.html`. All citations refer to locations in the source paper.
+  </footer>
+</body>
+</html>

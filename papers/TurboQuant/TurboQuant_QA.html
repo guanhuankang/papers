@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TurboQuant QA: codebook 和部署疑问</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --border: #dbe3f0;
+      --note-bg: #eef6ff;
+      --note-border: #60a5fa;
+      --warn-bg: #fff7ed;
+      --warn-border: #fb923c;
+      --ok-bg: #ecfdf3;
+      --ok-border: #4ade80;
+      --code-bg: #0f172a;
+      --code-text: #e5eefb;
+      --shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #edf4ff 0%, var(--bg) 240px);
+      color: var(--text);
+      line-height: 1.72;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      width: min(960px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 56px 0 24px;
+    }
+
+    .hero {
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(219, 227, 240, 0.95);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.28;
+      margin: 0 0 14px;
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: clamp(30px, 4vw, 42px);
+    }
+
+    h2 {
+      font-size: 28px;
+    }
+
+    h3 {
+      font-size: 21px;
+      margin-top: 28px;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    .lead {
+      font-size: 18px;
+      color: #344054;
+    }
+
+    .meta,
+    .muted {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    nav {
+      margin: 24px 0 36px;
+    }
+
+    .toc,
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .toc {
+      border-radius: 20px;
+    }
+
+    .toc ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    main {
+      padding-bottom: 56px;
+    }
+
+    section {
+      margin-bottom: 24px;
+    }
+
+    .qa {
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #fbfdff;
+    }
+
+    .note,
+    .warning,
+    .success {
+      border-left: 5px solid;
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin: 18px 0;
+    }
+
+    .note {
+      background: var(--note-bg);
+      border-color: var(--note-border);
+    }
+
+    .warning {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+    }
+
+    .success {
+      background: var(--ok-bg);
+      border-color: var(--ok-border);
+    }
+
+    ul, ol {
+      margin: 0 0 16px;
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 15px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    pre {
+      margin: 18px 0;
+      padding: 18px;
+      overflow-x: auto;
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 16px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    footer {
+      color: var(--muted);
+      padding: 0 0 48px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .hero,
+      .toc,
+      section {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="hero">
+        <span class="eyebrow">FAQ / QA</span>
+        <h1>TurboQuant 常见疑问：`codebook` 怎么来，部署时要维护多少套？</h1>
+        <p class="lead">
+          这一页专门回答两个最容易卡住初学者的问题：`codebook` 是怎么得到的，以及真实部署时到底要维护多少个
+          `codebook` 和随机旋转矩阵。
+        </p>
+        <p class="meta">
+          说明：你前面提到的 `cookbook`，这里统一按论文语境写成 `codebook`。
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="container">
+    <div class="toc">
+      <h2>目录</h2>
+      <ul>
+        <li><a href="#qa1">Q1. `codebook` 具体怎么获取？</a></li>
+        <li><a href="#qa2">Q2. 实际应用要维护多少个 `codebook` 和随机矩阵？</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="qa1">
+      <h2>Q1. `codebook` 具体怎么获取？</h2>
+
+      <div class="qa">
+        <h3>短答案</h3>
+        <p>
+          TurboQuant 的 `codebook` 不是像 PQ 那样“拿训练数据跑 k-means 学出来”，而是
+          <strong>先根据理论分布写出一维概率密度，再解一个 1D 最优量化问题</strong>，通常用
+          <code>Lloyd-Max</code> 迭代求出中心值。
+        </p>
+      </div>
+
+      <h3>1. 先理解它在量化什么</h3>
+      <p>
+        TurboQuant 先把向量随机旋转。旋转后，每个坐标会更像“同一种一维随机变量”。
+        于是问题不再是“高维向量怎么整体量化”，而变成：
+      </p>
+      <pre>如果一个一维随机变量只能用 2^b 个代表值表示，
+这 2^b 个值应该放在哪里，才能让平均平方误差最小？</pre>
+      <p>
+        这组代表值就是 `codebook`。
+      </p>
+
+      <h3>2. 为什么可以不依赖真实数据集？</h3>
+      <p>
+        因为论文已经告诉你：随机旋转后，单个坐标的分布是已知的。在严格形式下，它来自单位球面坐标诱导的分布；
+        在高维时，可以近似看成均值 0、方差约为 <code>1/d</code> 的高斯。
+      </p>
+      <p>
+        所以 `codebook` 的来源不是“训练样本”，而是“理论分布”。
+      </p>
+
+      <div class="note">
+        <strong>最关键的区别：</strong><br />
+        `PQ` 的 codebook 来自数据聚类；`TurboQuant` 的 codebook 来自分布优化。
+      </div>
+
+      <h3>3. 数学上做的事情</h3>
+      <p>
+        假设 bit-width 是 <code>b</code>，那每维只能选 <code>K = 2^b</code> 个代表值：
+      </p>
+      <pre>c1, c2, ..., cK</pre>
+      <p>
+        目标是让平均量化误差最小：
+      </p>
+      <pre>min E[(x - q(x))^2]</pre>
+      <p>
+        其中 <code>x</code> 是旋转后某一维的随机变量，<code>q(x)</code> 表示把它映射到最近的代表值。
+      </p>
+
+      <h3>4. 实际求法：Lloyd-Max</h3>
+      <ol>
+        <li>先初始化 <code>K</code> 个中心值。</li>
+        <li>相邻两个中心的中点作为分界线。</li>
+        <li>每个区间重新计算“条件均值”，把它当作新的中心值。</li>
+        <li>不断重复，直到中心值几乎不再变化。</li>
+      </ol>
+
+      <pre>initialize centroids
+repeat:
+    boundaries = midpoints(centroids)
+    for each interval:
+        centroid = conditional_mean(x | interval)
+until converged</pre>
+
+      <h3>5. 工程里通常怎么做</h3>
+      <ol>
+        <li>先选定维度 <code>d</code> 和 bit-width <code>b</code>。</li>
+        <li>用理论分布或高斯近似，离线算出 `codebook`。</li>
+        <li>把结果保存成表。</li>
+        <li>在线量化时只做“旋转 -> 找最近中心值 -> 存索引”。</li>
+      </ol>
+
+      <h3>6. 为什么这样很适合在线场景</h3>
+      <p>
+        因为你不需要针对每个新数据集重新训练码本。`codebook` 是预先准备好的，小而稳定，线上直接查表即可。
+      </p>
+
+      <div class="success">
+        <strong>一句话记忆：</strong><br />
+        `codebook` 不是从样本里学出来的，而是从“旋转后单维分布”推出来的。
+      </div>
+    </section>
+
+    <section id="qa2">
+      <h2>Q2. 实际应用的时候会维护多少个 `codebook` 和随机旋转矩阵？</h2>
+
+      <div class="qa">
+        <h3>短答案</h3>
+        <p>
+          一般不会很多。最常见的情况是：
+        </p>
+        <ul>
+          <li>`codebook` 按 bit-width 维护少量几套。</li>
+          <li>随机旋转矩阵按维度维护少量几套，并长期复用。</li>
+          <li>如果用 `TurboQuantprod`，还要再维护一套 QJL 的随机变换。</li>
+        </ul>
+      </div>
+
+      <h3>1. `codebook` 的数量通常由什么决定？</h3>
+      <p>
+        核心看两个东西：
+      </p>
+      <ul>
+        <li>你用了几种 bit-width</li>
+        <li>你是否对不同通道组用了不同精度</li>
+      </ul>
+      <p>
+        例如你只用 <code>2 bit</code>、<code>3 bit</code>、<code>4 bit</code>，那往往也就只要维护 3 套 `codebook`。
+      </p>
+
+      <h3>2. `TurboQuantprod` 会多一套 codebook 吗？</h3>
+      <p>
+        通常不会。因为 `TurboQuantprod` 前半段直接复用 `TurboQuantmse` 的 `codebook`，
+        只是 bit-width 会少 1。额外增加的是 QJL 随机变换，而不是另一套完全独立的标量码本。
+      </p>
+
+      <h3>3. 随机旋转矩阵会有很多套吗？</h3>
+      <p>
+        一般也不会。最常见做法是：
+      </p>
+      <ul>
+        <li>每种向量维度固定一套旋转配置</li>
+        <li>编码和解码始终复用同一套配置</li>
+      </ul>
+      <p>
+        例如如果你的 head dimension 一直是 <code>128</code>，那很可能只维护 1 套对应 128 维的旋转变换。
+      </p>
+
+      <div class="warning">
+        <strong>不会这样做：</strong><br />
+        不会每个 token 重新生成一个旋转矩阵，也不会每次推理临时换一套新的随机变换。
+        否则编码和解码都对不上，而且部署复杂度会暴涨。
+      </div>
+
+      <h3>4. 真实系统里可能维护的对象</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>对象</th>
+            <th>通常按什么维度维护</th>
+            <th>数量级</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>`codebook`</td>
+            <td>bit-width</td>
+            <td>通常 2 到 6 套</td>
+          </tr>
+          <tr>
+            <td>旋转变换 `Π`</td>
+            <td>向量维度</td>
+            <td>通常每种维度 1 套</td>
+          </tr>
+          <tr>
+            <td>QJL 变换 `S`</td>
+            <td>向量维度</td>
+            <td>若使用 `TurboQuantprod`，通常每种维度 1 套</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>5. 一个很典型的例子</h3>
+      <p>
+        假设你在做 LLM 的 KV cache 量化，配置如下：
+      </p>
+      <ul>
+        <li>head dimension = <code>128</code></li>
+        <li>普通通道使用 <code>2 bit</code></li>
+        <li>outlier 通道使用 <code>3 bit</code></li>
+        <li>采用 `TurboQuantprod`</li>
+      </ul>
+      <p>
+        那你很可能只需要维护：
+      </p>
+      <ol>
+        <li>1 套 128 维旋转配置 <code>Π_128</code></li>
+        <li>1 套 128 维 QJL 配置 <code>S_128</code></li>
+        <li>1 套 2 bit 的 `codebook`</li>
+        <li>1 套 3 bit 的 `codebook`</li>
+      </ol>
+      <p>
+        也就是说，核心对象其实非常少。
+      </p>
+
+      <h3>6. 工程上未必真的存“稠密矩阵”</h3>
+      <p>
+        论文里写的是随机矩阵，但工程里通常不会真的保存完整的稠密矩阵。更常见的做法是保存：
+      </p>
+      <ul>
+        <li>随机种子</li>
+        <li>符号翻转向量</li>
+        <li>置换规则</li>
+        <li>结构化快速变换的配置</li>
+      </ul>
+      <p>
+        也就是说，真实维护的常常不是“很多大矩阵”，而是“少量可复现的随机变换配置”。
+      </p>
+
+      <div class="success">
+        <strong>最实用的记法：</strong><br />
+        `codebook` 往往按 bit-width 管，随机变换往往按 dimension 管，所以数量通常都不大。
+      </div>
+    </section>
+  </main>
+
+  <footer class="container">
+    Saved as `papers/tirboquant_QA.html`. This page complements `papers/tirboquant_tutorial.html` with focused FAQ-style answers.
+  </footer>
+</body>
+</html>

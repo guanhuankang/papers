@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LongVILA: Scaling Long-Context Visual Language Models for Long Videos</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --border: #dbe3f0;
+      --warning-bg: #fff7ed;
+      --warning-border: #fdba74;
+      --success-bg: #ecfdf3;
+      --success-border: #86efac;
+      --source-bg: #eef6ff;
+      --source-border: #60a5fa;
+      --shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 240px);
+      color: var(--text);
+      line-height: 1.72;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      width: min(940px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 56px 0 24px;
+    }
+
+    .hero {
+      background: rgba(255, 255, 255, 0.84);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(219, 227, 240, 0.95);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.28;
+      margin: 0 0 14px;
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: clamp(28px, 4vw, 42px);
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-top: 0;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-top: 28px;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 15px;
+      margin-top: 16px;
+    }
+
+    .lead {
+      font-size: 18px;
+      color: #344054;
+    }
+
+    nav {
+      margin: 24px 0 36px;
+    }
+
+    .toc {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .toc ul {
+      margin: 0;
+      padding-left: 20px;
+      columns: 2;
+      column-gap: 32px;
+    }
+
+    .toc li {
+      margin: 0 0 10px;
+      break-inside: avoid;
+    }
+
+    main {
+      padding-bottom: 56px;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: #f8fbff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      margin-left: 6px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .source-note,
+    .warning-note,
+    .success-note {
+      border-left: 5px solid;
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin: 18px 0;
+    }
+
+    .source-note {
+      background: var(--source-bg);
+      border-color: var(--source-border);
+    }
+
+    .warning-note {
+      background: var(--warning-bg);
+      border-color: var(--warning-border);
+    }
+
+    .success-note {
+      background: var(--success-bg);
+      border-color: var(--success-border);
+    }
+
+    .citation {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    ul, ol {
+      padding-left: 22px;
+      margin: 0 0 16px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 15px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    footer {
+      color: var(--muted);
+      padding: 0 0 48px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .hero,
+      section,
+      .toc {
+        padding: 22px;
+      }
+
+      .toc ul {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="hero">
+        <span class="eyebrow">Paper Report</span>
+        <h1>LongVILA: Scaling Long-Context Visual Language Models for Long Videos</h1>
+        <p class="lead">
+          这篇论文提出 <strong>LongVILA</strong>，目标不是只做一个“能看更多帧”的模型，而是给出一个
+          <strong>full-stack solution</strong>：一方面通过五阶段训练流程把现有 VLM 从短视频扩展到长视频；
+          另一方面通过 <strong>Multi-Modal Sequence Parallelism (MM-SP)</strong> 把超长上下文训练和推理真正跑起来。
+          论文的核心主张是：长视频理解不是单靠更长位置编码或更多采样帧就能解决，而需要数据、训练 curriculum 与并行系统协同设计。
+          <span class="citation">(Page 1, Abstract; Page 1-2, Introduction; Figure 1)</span>
+        </p>
+        <p class="meta">
+          Authors: Yukang Chen, Fuzhao Xue, Dacheng Li, Qinghao Hu, et al. |
+          arXiv:2408.10188v6 |
+          Code & Models: <a href="https://github.com/NVlabs/VILA/longvila">github.com/NVlabs/VILA/longvila</a>
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="container">
+    <div class="toc">
+      <h2>目录</h2>
+      <ul>
+        <li><a href="#summary">1. 一句话总结与核心判断</a></li>
+        <li><a href="#background">2. 研究背景与问题动机</a></li>
+        <li><a href="#pipeline">3. LongVILA 训练流程</a></li>
+        <li><a href="#system">4. MM-SP 系统设计</a></li>
+        <li><a href="#experiments">5. 实验结果解读</a></li>
+        <li><a href="#data">6. 数据溯源专项说明</a></li>
+        <li><a href="#insights">7. 亮点与工程启发</a></li>
+        <li><a href="#limitations">8. 局限性与风险</a></li>
+        <li><a href="#conclusion">9. 结论</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section id="summary">
+      <h2>1. 一句话总结与核心判断</h2>
+      <p>
+        LongVILA 的真正贡献不只是把视频帧数从 8 提到 2048，而是把“长上下文 VLM”拆成一个可执行的完整工程闭环：
+        <strong>五阶段训练 pipeline + 长视频监督数据构造 + 面向多模态的 sequence parallelism 系统</strong>。
+        这使得作者不仅在 9 个视频 benchmark 上拿到强结果，还能在超过 100 万 token 的 long-video needle-in-a-haystack 设置上做到
+        <strong>99.8%</strong> 准确率，并把训练上下文扩展到 <strong>2M tokens</strong>。
+        <span class="citation">(Page 1, Abstract; Page 1-2, Introduction; Page 9-10, Section 5.2-5.3)</span>
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <strong>核心模型思路</strong>
+          在 VILA-1.5 基础上加入 context extension 与 long-video SFT 两个新阶段。 <span class="citation">(Page 1, Figure 1; Page 3-4, Section 3)</span>
+        </div>
+        <div class="card">
+          <strong>核心系统思路</strong>
+          用 MM-SP 处理 modality heterogeneity 与 network heterogeneity，并突破 head 数限制。 <span class="citation">(Page 5-7, Section 4)</span>
+        </div>
+        <div class="card">
+          <strong>最亮眼结果</strong>
+          6000-frame long-video needle-in-a-haystack 达到 99.8%，上下文长度超过 1M tokens。 <span class="citation">(Page 1-2, Figure 2; Page 10, Section 5.3)</span>
+        </div>
+        <div class="card">
+          <strong>系统收益</strong>
+          训练端比 ring-style SP 快 2.1× 到 5.7×，推理端比 HuggingFace Pipeline 快 8.2×。 <span class="citation">(Page 1, Abstract; Page 8-9, Section 5.1.1-5.1.2)</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="background">
+      <h2>2. 研究背景与问题动机</h2>
+      <p>
+        论文从一个很实际的问题出发：现有 VLM 虽然在 image understanding、short video QA 上越来越强，但对“长视频”仍缺乏成体系解决方案。
+        原因不只是上下文窗口不够长，还包括训练数据不匹配、长序列训练显存/通信开销极高，以及多模态输入在并行切分时比 text-only LLM 更复杂。
+        作者认为，之前一些方法要么依赖 long-context LLM 迁移能力，要么依赖 token compression 回避真正的上下文扩展问题，缺少覆盖数据、算法和系统的完整设计。
+        <span class="citation">(Page 1-2, Introduction)</span>
+      </p>
+      <p>
+        因此 LongVILA 的定位非常明确：它不是单点改进，而是一个 <strong>full-stack</strong> 方案。
+        在算法侧，它要回答“如何把 VLM 真正训练成 long-video 模型”；在系统侧，它要回答“如何让超长多模态序列训练和推理在真实多 GPU 集群上可行”。
+        <span class="citation">(Page 1-2, Introduction; Page 5-7, Section 4)</span>
+      </p>
+
+      <div class="success-note">
+        <strong>本文最重要的问题定义：</strong><br />
+        长视频理解不是“多喂一点帧”这么简单，而是“模型能力扩展 + 数据课程设计 + 分布式系统支持”的联合问题。
+        <span class="citation">(Page 1-2, Introduction; Figure 1)</span>
+      </div>
+    </section>
+
+    <section id="pipeline">
+      <h2>3. LongVILA 训练流程</h2>
+      <p>
+        LongVILA 的训练 pipeline 一共有五个阶段。前 1 到 3 阶段继承自 VILA，负责建立基本多模态能力；新增的第 4 阶段负责把 LLM 的文本上下文拉长；
+        第 5 阶段则专门做 long-video supervised fine-tuning。作者的消融表明，这种顺序化 curriculum 比打乱顺序或把阶段 3 和 5 直接合并训练更有效。
+        <span class="citation">(Page 1, Figure 1; Page 2, Table 1; Page 3-4, Section 3; Page 9-10, Section 5.2)</span>
+      </p>
+
+      <h3>3.1 Stage 1-3：Alignment、Pre-training、Short SFT</h3>
+      <p>
+        在 Stage 1，作者用开源 image / video caption 数据训练 multi-modal projector，此时 vision encoder 与 LLM 都冻结。
+        在 Stage 2，冻结 vision encoder，只训练 LLM 和 projector，执行大规模多模态预训练。作者沿用 VILA2 的做法，用
+        <code>VILA-1.5-40B</code> 对 <code>COYO-25M</code> 重新打标，以提高开源大规模数据质量。Stage 3 则用 image 与 short video instruction-following 数据做 supervised fine-tuning，
+        包括 <code>YouCook2</code> 与 <code>ShareGPTVideo</code> 等短视频数据。 <span class="citation">(Page 3, Section 3.1)</span>
+      </p>
+
+      <h3>3.2 Stage 4：Context Extension for LLMs</h3>
+      <p>
+        作者强调，先把底层 LLM 的上下文长度扩到足够大，再去做 long-video SFT，是必须的前置步骤。具体做法是：
+        在 Stage 2 之后，以 continued pre-training 方式把上下文长度从 <code>8,192</code> 逐步扩到 <code>65,536</code>，再到
+        <code>262,144</code>，总计使用 <strong>17B tokens</strong> 的 <code>SlimPajama</code> 文本数据，并在该阶段使用 LoRA 与 sequence parallelism。
+        这一阶段大约消耗 <strong>336 GPU hours</strong>，硬件为 <code>80GB A100</code>。 <span class="citation">(Page 3-4, Section 3.2)</span>
+      </p>
+
+      <h3>3.3 Stage 5：Long Supervised Fine-Tuning</h3>
+      <p>
+        Stage 5 是 LongVILA 针对长视频最关键的数据构造阶段。作者基于 <code>Shot2Story</code> 的原始长视频，构建了一个新的长视频指令微调数据集，
+        共 <strong>15,292 videos</strong>。构造流程是：先把长视频切成约 10 秒一段的小 clip，再用 <code>VILA-1.5</code> 生成 clip caption，
+        然后再由 LLM 根据多段 caption 生成 question-answer 对。每个视频包含一个用于 captioning 的样本和一个用于 QA 的样本，问题类别覆盖
+        Spatial、Attribute、Action、Object、OCR、Synopsis、Temporal 等，视频来源类别覆盖 Travel & Events、Sports、Education、Gaming 等多个领域。
+        <span class="citation">(Page 4, Figure 4; Page 4, Figure 5; Page 4, Section 3.3)</span>
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <strong>训练骨架</strong>
+          基于 VILA-1.5，实验使用 Qwen2-1.5B 与 Qwen2-7B 作为底座。 <span class="citation">(Page 3, Section 3.1)</span>
+        </div>
+        <div class="card">
+          <strong>文本长上下文扩展</strong>
+          17B tokens 的 SlimPajama，把上下文拉到 262,144。 <span class="citation">(Page 3-4, Section 3.2)</span>
+        </div>
+        <div class="card">
+          <strong>长视频 SFT 数据</strong>
+          15,292 个 Shot2Story 原始长视频生成的新数据集。 <span class="citation">(Page 4, Section 3.3; Figure 4-5)</span>
+        </div>
+        <div class="card">
+          <strong>顺序重要性</strong>
+          Stage 1-2-3-4-5 的顺序优于若干替代方案。 <span class="citation">(Page 2, Table 1)</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="system">
+      <h2>4. MM-SP 系统设计</h2>
+      <p>
+        论文的系统部分是 LongVILA 的另一半灵魂。作者指出，现有 sequence parallelism 方案大多为 text-only LLM 设计，直接拿来做 VLM 会遇到三类问题：
+        <strong>modality heterogeneity</strong>、<strong>network heterogeneity</strong> 和 <strong>最大可扩展序列长度受 attention heads 数限制</strong>。
+        因此他们提出面向多模态的 <strong>Multi-Modal Sequence Parallelism (MM-SP)</strong>。 <span class="citation">(Page 5-7, Section 4)</span>
+      </p>
+
+      <h3>4.1 为什么 text-only SP 不够用？</h3>
+      <p>
+        对 text-only LLM 来说，序列可以直接按 token 均匀切分；但在 VLM 里，一个图像占位符 <code>&lt;img&gt;</code> 会在视觉编码后展开成大量真实 token，
+        例如单帧可能对应约 256 个 token。若仍像文本那样直接切分，GPU 负载会严重失衡。与此同时，多节点环境下 NVLink 和 InfiniBand 带宽相差巨大，
+        传统 ring-style P2P 设计无法充分利用节点内高速带宽。 <span class="citation">(Page 5-6, Section 4.1; Figure 6)</span>
+      </p>
+
+      <h3>4.2 MM-SP 的关键设计</h3>
+      <p>
+        MM-SP 的核心是 <strong>two-stage sharding strategy + 2D-Attention communication pattern</strong>。
+        第一阶段按图像/帧数切分，以平衡 vision tower 的负载；第二阶段再聚合视觉与文本输入，按 token 做重新切分，以平衡 LLM 侧负载。
+        为了兼容 ring-style attention，作者允许在序列末尾补 dummy tokens，并在 loss 中忽略这些 padded tokens。随后，真正的 attention 计算采用 2D-attention：
+        节点内使用 All-to-All，节点间使用 P2P，既利用了快的 NVLink，也避免了纯 A2A 的扩展限制。 <span class="citation">(Page 6-7, Section 4.2; Figure 6; Figure 7)</span>
+      </p>
+
+      <h3>4.3 推理模式为什么更重要？</h3>
+      <p>
+        很多长上下文系统只讨论训练，而 LongVILA 还专门实现了 distributed inference。作者指出 Hugging Face Pipeline 的层级切分方式一次通常只激活一张卡，
+        导致吞吐差且第一张卡容易成为 embedding / image 输入的显存瓶颈。MM-SP 推理则让所有设备并行参与计算，并把内存更均匀地分散到多卡上，
+        这样既更快，也能支持更长的推理序列。 <span class="citation">(Page 7, Section 4.3; Figure 8)</span>
+      </p>
+
+      <div class="success-note">
+        <strong>系统部分的本质贡献：</strong><br />
+        MM-SP 不是单纯“又一种 sequence parallelism”，而是把多模态负载不均、节点内外带宽异质、以及长视频超长序列三件事一起解决。
+        <span class="citation">(Page 5-7, Section 4)</span>
+      </div>
+    </section>
+
+    <section id="experiments">
+      <h2>5. 实验结果解读</h2>
+
+      <h3>5.1 训练系统与推理系统表现</h3>
+      <p>
+        在训练端，作者主要与 <code>ZIGZAG-RINGATTN</code>、<code>DeepSpeed-Ulysses</code> 和 <code>Megatron-LM</code> 的 context / tensor parallel 组合对比。
+        结果显示，MM-SP 相比 ring-style SP 可实现 <strong>2.1× 到 5.7×</strong> 的加速，相比 Megatron 的 hybrid 策略快
+        <strong>1.1× 到 1.4×</strong>；同时它还能在 256 GPUs 上支持超过 <strong>2M context length</strong>。在推理端，与 HuggingFace Pipeline 相比，
+        MM-SP 在 8×H100 上达到 <strong>8.2× speedup</strong>，并支持约 <strong>2.9×</strong> 更长的序列。 <span class="citation">(Page 8-9, Section 5.1.1-5.1.2; Figure 9; Figure 10)</span>
+      </p>
+
+      <h3>5.2 两阶段切分是否真的有效？</h3>
+      <p>
+        作者用一个 video captioning 数据集对比 two-stage sharding 与 one-stage baseline。表 5 显示，在 2、4、8 张 H100 上，
+        two-stage 版本把 iteration time 从 <code>0.78/0.89/1.20</code> 秒降到 <code>0.77/0.86/1.12</code> 秒，收益大约为 1% 到 7%。
+        这说明单独按图像数切分在长 captioning 任务上仍会因为文本 token 分布不均而吃亏。 <span class="citation">(Page 9, Section 5.1.3; Appendix Table 5)</span>
+      </p>
+
+      <h3>5.3 通用视频理解结果</h3>
+      <p>
+        在 9 个公开视频 benchmark 上，LongVILA-7B 达到全面且强势的表现。Table 3 中它在多个任务上优于一系列开源 7B/8B 视频模型，
+        包括 <code>ActivityNet-QA 59.5</code>、<code>EgoSchema 67.7</code>、<code>EventBench 58.0</code>、<code>MVBench 67.1</code>、
+        <code>NExT-QA 80.7</code>、<code>VNBench 63.0</code>，以及 <code>VideoMME 60.1 / 65.1</code>（without / with subtitle）。
+        整体上，它已经接近甚至超过若干更大或商业模型在部分开源 benchmark 上的表现。 <span class="citation">(Page 8-10, Table 3)</span>
+      </p>
+
+      <h3>5.4 为什么 VideoMME 特别值得看？</h3>
+      <p>
+        VideoMME 是全文最突出的主 benchmark 之一。表 4 进一步显示，LongVILA-7B 使用 <strong>256 frames</strong> 时，
+        在 VideoMME 上达到 <code>60.1</code>（无字幕）和 <code>65.1</code>（有字幕），且在 Short、Medium、Long 三个长度区间都保持较均衡提升；
+        LongVILA-1.5B 也已经具有相当竞争力。这说明 LongVILA 的收益不是只体现在极长视频 needle 测试上，而是在常规 long-video benchmark 上也成立。
+        <span class="citation">(Page 9-10, Table 4; Section 5.2)</span>
+      </p>
+
+      <h3>5.5 Needle-in-a-Haystack：长视频极限能力</h3>
+      <p>
+        Figure 2 是这篇论文最抓眼球的结果。作者沿用现有 long-video needle-in-a-haystack 方法，在长视频中插入特制图像并询问对应问题。
+        32-frame baseline 超过 32 帧后就无法稳定定位 needle；LongVA 在 3,000 帧上达到 <code>87.6%</code>；而 LongVILA 训练到 2048 帧后，
+        在 <strong>6,000 frames</strong> 上实现 <strong>99.8%</strong> 准确率，对应上下文长度超过 <strong>1 million tokens</strong>。作者甚至明确声称，
+        这是他们所知首个能处理百万级上下文长度的 VLM。 <span class="citation">(Page 1-2, Figure 2; Page 10, Section 5.3)</span>
+      </p>
+
+      <h3>5.6 Appendix：更多帧真的能改善 captioning 吗？</h3>
+      <p>
+        附录中的 <code>LongVILA-Caption</code> 给了一个很直观的补充证据。该 benchmark 包含 100 个长视频，并通过人工检查验证 caption 质量。
+        作者在 8、128、256 帧三个设置下比较模型，平均分从 <code>2.00</code> 升到 <code>2.53</code> 再到 <code>3.26</code>，说明随着可见帧数增长，
+        模型生成的描述更正确、更详细、上下文更完整。 <span class="citation">(Page 15-16, Appendix A.1; Table 6)</span>
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>结果项</th>
+            <th>关键数字</th>
+            <th>意义</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Needle-in-a-Haystack</td>
+            <td>99.8% @ 6000 frames</td>
+            <td>证明模型在百万 token 级长视频中仍能精确定位细粒度信息。 <span class="citation">(Page 1-2, Figure 2; Page 10, Section 5.3)</span></td>
+          </tr>
+          <tr>
+            <td>VideoMME</td>
+            <td>65.1 with subtitle</td>
+            <td>说明 LongVILA 不只会处理极限长视频，也能在主流 benchmark 上拿到强分数。 <span class="citation">(Page 1, Abstract; Page 9-10, Table 4)</span></td>
+          </tr>
+          <tr>
+            <td>训练系统加速</td>
+            <td>2.1× - 5.7× vs ring SP</td>
+            <td>系统设计不是附属品，而是能否训练长视频模型的前提。 <span class="citation">(Page 8, Section 5.1.1)</span></td>
+          </tr>
+          <tr>
+            <td>推理系统加速</td>
+            <td>8.2× vs HF Pipeline</td>
+            <td>长上下文能力在推理侧也可落地。 <span class="citation">(Page 8-9, Section 5.1.2)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="data">
+      <h2>6. 数据溯源专项说明 <span class="badge">重点</span></h2>
+
+      <div class="source-note">
+        <strong>总览：</strong>
+        LongVILA 的数据来源不是单一数据集，而是随五阶段训练流程和不同实验任务分层组织的。最重要的数据分为三类：
+        <strong>基础多模态训练数据</strong>、<strong>文本长上下文扩展数据</strong>、<strong>作者自建长视频 SFT / caption benchmark</strong>，
+        此外还有多个公开视频 benchmark 用于评估。论文对部分数据集名称、规模、构造流程说明得较清楚，但对前 1-3 阶段的某些开源数据规模没有逐项展开。
+      </div>
+
+      <h3>6.1 Stage 1-3：基础多模态训练数据</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>项目</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>数据集名称</td>
+            <td>开源 image / video caption datasets；明确提到 <code>COYO-25M</code>、<code>YouCook2</code>、<code>ShareGPTVideo</code>。 <span class="citation">(Page 3, Section 3.1)</span></td>
+          </tr>
+          <tr>
+            <td>官方链接 / 引用</td>
+            <td>论文给出引用：COYO-25M [Byeon et al., 2022]、YouCook2 [Zhou et al., 2018]、ShareGPTVideo [Zhang et al., 2024c]；正文未给直接 URL。 <span class="citation">(Page 3, Section 3.1; References)</span></td>
+          </tr>
+          <tr>
+            <td>数据规模</td>
+            <td><code>COYO-25M</code> 名称本身表明量级约 2500 万；其余阶段 1-3 所用 image/video caption 数据总规模在正文中未逐项量化。 <span class="citation">(Page 3, Section 3.1)</span></td>
+          </tr>
+          <tr>
+            <td>采集方式</td>
+            <td>使用开源图文/视频字幕数据；其中 COYO-25M 额外由 <code>VILA-1.5-40B</code> 重新打标以提升质量。 <span class="citation">(Page 3, Section 3.1)</span></td>
+          </tr>
+          <tr>
+            <td>数据划分</td>
+            <td>⚠️ 原文未明确逐数据集说明 train / val / test 细节，主要作为训练阶段数据使用。 <span class="citation">(Page 3, Section 3.1)</span></td>
+          </tr>
+          <tr>
+            <td>预处理 / 增强</td>
+            <td>最明确的预处理是用 <code>VILA-1.5-40B</code> 对 COYO-25M relabel；short video SFT 混合 image 与 short video instruction-following data。 <span class="citation">(Page 3, Section 3.1)</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6.2 Stage 4：文本长上下文扩展数据</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>项目</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>数据集名称</td>
+            <td><code>SlimPajama</code>。 <span class="citation">(Page 3-4, Section 3.2)</span></td>
+          </tr>
+          <tr>
+            <td>官方链接 / 引用</td>
+            <td>引用 [Soboleva et al., 2023]，正文未提供直接下载链接。 <span class="citation">(Page 3-4, Section 3.2; References)</span></td>
+          </tr>
+          <tr>
+            <td>数据规模</td>
+            <td>作者在 context extension 阶段实际使用总计 <strong>17B tokens</strong>。 <span class="citation">(Page 3-4, Section 3.2)</span></td>
+          </tr>
+          <tr>
+            <td>采集方式</td>
+            <td>使用现有大规模文本语料，不是视频数据；作为 continued pre-training 语料。 <span class="citation">(Page 3-4, Section 3.2)</span></td>
+          </tr>
+          <tr>
+            <td>数据划分</td>
+            <td>采用 progressive schedule，把上下文长度从 8,192 逐步升到 65,536，再到 262,144；正文未单列 train/val/test。 <span class="citation">(Page 3-4, Section 3.2)</span></td>
+          </tr>
+          <tr>
+            <td>预处理 / 增强</td>
+            <td>配合 RoPE base frequency 调整与 LoRA 进行上下文扩展微调。 <span class="citation">(Page 3-4, Section 3.2)</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6.3 Stage 5：作者自建长视频 SFT 数据集</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>项目</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>数据集名称</td>
+            <td>作者新构建的 LongVILA long-video instruction-following dataset，原始视频来自 <code>Shot2Story</code>。 <span class="citation">(Page 4, Section 3.3)</span></td>
+          </tr>
+          <tr>
+            <td>官方链接 / 引用</td>
+            <td>Shot2Story 引用为 [Han et al., 2023]；正文未提供下载 URL。 <span class="citation">(Page 4, Section 3.3; References)</span></td>
+          </tr>
+          <tr>
+            <td>数据规模</td>
+            <td><strong>15,292 videos</strong>；每个视频有一个 captioning sample 和一个 QA sample。 <span class="citation">(Page 4, Figure 4; Section 3.3)</span></td>
+          </tr>
+          <tr>
+            <td>采集方式</td>
+            <td>从 Shot2Story 原始长视频出发，先切成约 10 秒 clip，再用 <code>VILA-1.5</code> 生成 clip caption，最后由 LLM 生成 question-answer pairs。 <span class="citation">(Page 4, Figure 5; Section 3.3)</span></td>
+          </tr>
+          <tr>
+            <td>数据划分</td>
+            <td>⚠️ 原文未明确写出 train/val/test 划分比例；从上下文看，该数据主要用于 Stage 5 supervised fine-tuning。 <span class="citation">(Page 4, Section 3.3)</span></td>
+          </tr>
+          <tr>
+            <td>预处理 / 增强</td>
+            <td>核心预处理包括长视频切片、自动 caption、再基于 caption 合成多类型 QA；问题类型覆盖 Spatial、Attribute、Action、Object、OCR、Synopsis、Temporal。 <span class="citation">(Page 4, Figure 4-5; Section 3.3)</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6.4 主评测数据：9 个视频 benchmark</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>实验场景</th>
+            <th>使用数据</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>通用视频理解</td>
+            <td>ActivityNet-QA, EgoSchema, EventBench, LongVideoBench, PerceptionTest, MVBench, NExT-QA, VNBench, VideoMME</td>
+            <td>9 个 benchmark 的成绩汇总在 Table 3；VideoMME 明细见 Table 4。 <span class="citation">(Page 8-10, Table 3; Table 4)</span></td>
+          </tr>
+          <tr>
+            <td>Needle-in-a-Haystack</td>
+            <td>沿用现有文献方法构造长视频 needle 测试</td>
+            <td>在长视频中插入 specially designed images，并在不同深度位置提问。 <span class="citation">(Page 10, Section 5.3)</span></td>
+          </tr>
+          <tr>
+            <td>Caption 附加评测</td>
+            <td>LongVILA-Caption</td>
+            <td>100 个长视频，caption 按 Section 3.3 方法生成，并经人工检查验证。 <span class="citation">(Page 15-16, Appendix A.1)</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6.5 LongVILA-Caption 附录数据</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>项目</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>数据集名称</td>
+            <td><code>LongVILA-Caption</code>。 <span class="citation">(Page 15-16, Appendix A.1)</span></td>
+          </tr>
+          <tr>
+            <td>数据规模</td>
+            <td><strong>100 long videos</strong>。 <span class="citation">(Page 15-16, Appendix A.1)</span></td>
+          </tr>
+          <tr>
+            <td>采集方式</td>
+            <td>caption 生成方式与 Section 3.3 相同，并由人工检查验证。 <span class="citation">(Page 15-16, Appendix A.1)</span></td>
+          </tr>
+          <tr>
+            <td>评估方式</td>
+            <td>参照 VideoChatGPT 方法，从 correctness、detailed orientation、contextual understanding 三个方面评分；correctness 由 GPT-4 辅助打分。 <span class="citation">(Page 15-16, Appendix A.1)</span></td>
+          </tr>
+          <tr>
+            <td>数据划分</td>
+            <td>⚠️ 原文未明确 train/val/test，描述上更像评测 benchmark。 <span class="citation">(Page 15-16, Appendix A.1)</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="warning-note">
+        <strong>数据报告中的缺口：</strong><br />
+        论文对 Stage 4 和 Stage 5 的数据规模、构造流程说明较清楚，但对 Stage 1-3 中“开源 image/video caption datasets”的完整清单、逐数据集规模、以及精确划分并未完全展开。
+        因此若要严格复现，需要额外查阅 VILA / VILA2 仓库或补充材料。 <span class="citation">(Page 3-4, Section 3.1-3.3)</span>
+      </div>
+    </section>
+
+    <section id="insights">
+      <h2>7. 亮点与工程启发</h2>
+      <h3>7.1 这篇论文最大的价值是“把训练和系统一起做”</h3>
+      <p>
+        很多 long-context 论文只关注模型结构，系统细节写得很轻；很多系统论文又不真正把它落到多模态长视频场景。LongVILA 的可贵之处在于，
+        它不是把系统当附录，而是把系统设计写成支撑模型能力扩展的必要组成。换句话说，这篇论文证明了：当上下文达到数十万甚至数百万 token 时，
+        “会不会训、训不训得动、推理能不能跑”已经和模型能力本身一样重要。 <span class="citation">(Page 1, Abstract; Page 5-9, Section 4-5.1)</span>
+      </p>
+
+      <h3>7.2 五阶段 curriculum 很有方法论意义</h3>
+      <p>
+        作者并没有直接拿长视频去继续 instruction tuning，而是先完成基础多模态对齐与短视频能力学习，再做纯文本 context extension，最后才进入 long-video SFT。
+        这个设计背后的理念是：<strong>先解决语言模型的长上下文承载能力，再让它吃长视频监督信号</strong>。这对其他多模态长上下文系统也有很强借鉴意义。
+        <span class="citation">(Page 3-4, Section 3; Table 1)</span>
+      </p>
+
+      <h3>7.3 数据构造策略也很有代表性</h3>
+      <p>
+        LongVILA 并没有依赖完全人工标注的大规模长视频 QA 数据，而是采取“长视频切 clip -> 先 caption -> 再由 LLM 合成 QA”的半自动流程。
+        这说明在长视频 supervision 仍然稀缺的阶段，合理的数据工程设计本身就是提升模型能力的关键技术点。 <span class="citation">(Page 4, Figure 5; Section 3.3)</span>
+      </p>
+    </section>
+
+    <section id="limitations">
+      <h2>8. 局限性与风险</h2>
+      <p>
+        第一，LongVILA 的强性能高度依赖系统资源。论文中 2M context training 需要 256 GPUs，context extension 也使用 80GB A100，说明其最佳效果更接近大规模集群设定，
+        对普通研究者的直接复现门槛并不低。 <span class="citation">(Page 1, Abstract; Page 3-4, Section 3.2; Page 8-9, Section 5.1.1)</span>
+      </p>
+      <p>
+        第二，前 1-3 阶段训练数据的完整细节没有完全写开，部分阶段需要依赖 VILA/VILA2 的既有流程理解，这会影响严格复现的数据透明度。
+        <span class="citation">(Page 3, Section 3.1)</span>
+      </p>
+      <p>
+        第三，虽然 needle-in-a-haystack 结果极强，但这类测试更偏向长程检索能力；它不能完全代表开放式视频理解、复杂推理和真实多步交互的全部难度。
+        因此需要同时结合主 benchmark 与附录 caption 结果一起看。 <span class="citation">(Page 9-10, Section 5.2-5.3; Page 15-16, Appendix A.1)</span>
+      </p>
+
+      <div class="warning-note">
+        <strong>一个现实判断：</strong><br />
+        LongVILA 证明了“长视频 VLM 可以做起来”，但它也同时提醒我们：真正的瓶颈并不是模型结构 alone，而是训练数据和分布式系统资源。
+        <span class="citation">(Page 1-2, Introduction; Page 5-9, Section 4-5.1)</span>
+      </div>
+    </section>
+
+    <section id="conclusion">
+      <h2>9. 结论</h2>
+      <p>
+        LongVILA 是一篇非常完整的 long-context VLM 论文。它没有把问题简化成“把窗口拉长”，而是同时解决了三件事：
+        <strong>如何设计训练课程</strong>、<strong>如何构造长视频监督数据</strong>、<strong>如何在多 GPU 系统上真正训和推</strong>。
+        最终它把视频帧数从 8 扩展到 2048，在 6000 帧 needle 测试中达到 99.8%，并在 VideoMME 等主流 benchmark 上取得强竞争力。
+        <span class="citation">(Page 1, Abstract; Page 9-10, Section 5.2-5.3; Page 10, Conclusion)</span>
+      </p>
+      <p>
+        如果说这篇论文最值得记住的一点是什么，那就是：<strong>长视频理解的突破来自 full-stack co-design</strong>。对未来长视频、多模态 agent、以及多小时视觉上下文系统来说，
+        LongVILA 提供的不只是一个模型名字，而是一套可复用的设计范式。 <span class="citation">(Page 1-2, Introduction; Page 10, Conclusion)</span>
+      </p>
+    </section>
+  </main>
+
+  <footer class="container">
+    Report generated from `papers/LongVILA Scaling Long-Context Visual Language Models for Long Videos.pdf` and saved as `papers/LongVILA Scaling Long-Context Visual Language Models for Long Videos.html`.
+  </footer>
+</body>
+</html>
