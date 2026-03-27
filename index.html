@@ -147,7 +147,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 16px;
       margin-top: 20px;
     }
@@ -156,7 +156,7 @@
       background: #f8fbff;
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 18px;
+      padding: 20px;
     }
 
     .card strong {
@@ -250,11 +250,11 @@
         <span class="eyebrow">Static Portal</span>
         <h1>Paper Reading Hub</h1>
         <p class="lead">
-          这是一个静态入口页，用来统一访问 `papers/` 目录中的论文 PDF、已生成的 HTML 报告，以及 `read_paper.md`
-          中的报告生成规范。
+          这是一个固定入口页，只提供稳定的目录导航，不直接列出具体论文条目。
+          这样你后续只修改 `papers/` 里的内容，而不需要频繁改首页。
         </p>
         <p class="meta">
-          用法：先从下方进入具体论文或报告，再参考页面底部的 `read_paper.md` 规范了解报告格式与数据溯源要求。
+          适合部署到 GitHub Pages，作为本地论文库和报告库的统一入口。
         </p>
       </div>
     </div>
@@ -264,80 +264,62 @@
     <div class="toc">
       <h2>目录</h2>
       <ul>
-        <li><a href="#reports">1. 已生成的 HTML 报告</a></li>
-        <li><a href="#papers">2. 原始论文 PDF</a></li>
-        <li><a href="#workflow">3. 使用方式</a></li>
-        <li><a href="#read-paper">4. read_paper.md 内容</a></li>
+        <li><a href="#entry">1. 入口导航</a></li>
+        <li><a href="#workflow">2. 使用方式</a></li>
+        <li><a href="#read-paper">3. read_paper.md 内容</a></li>
       </ul>
     </div>
   </nav>
 
   <main class="container">
-    <section id="reports">
-      <h2>1. 已生成的 HTML 报告</h2>
+    <section id="entry">
+      <h2>1. 入口导航</h2>
       <div class="grid">
         <article class="card">
-          <strong>PEARL 报告</strong>
-          <p>连续滚动式 HTML 学术报告，聚焦个性化流式视频理解与 PEARL-Bench。</p>
+          <strong>`papers/` 目录</strong>
+          <p>
+            进入论文资源目录。后续新增或替换 PDF、HTML 报告、tutorial、QA 页面时，
+            首页无需修改，统一从这里进入。
+          </p>
           <div class="actions">
-            <a class="button" href="papers/PEARL-%20Personalized%20Streaming%20Video%20Understanding%20Model.html">打开 HTML 报告</a>
-            <a class="button" href="papers/PEARL-%20Personalized%20Streaming%20Video%20Understanding%20Model.pdf">打开原论文 PDF</a>
+            <a class="button" href="papers/">打开 `papers/`</a>
           </div>
         </article>
 
         <article class="card">
-          <strong>LongVILA 报告</strong>
-          <p>连续滚动式 HTML 学术报告，覆盖五阶段训练流程、MM-SP 系统与长视频实验。</p>
+          <strong>`read_paper.md` 规范</strong>
+          <p>
+            查看论文报告生成规则，包括连续滚动式 HTML、中文讲解、引用标注和数据溯源要求。
+          </p>
           <div class="actions">
-            <a class="button" href="papers/LongVILA%20Scaling%20Long-Context%20Visual%20Language%20Models%20for%20Long%20Videos.html">打开 HTML 报告</a>
-            <a class="button" href="papers/LongVILA%20Scaling%20Long-Context%20Visual%20Language%20Models%20for%20Long%20Videos.pdf">打开原论文 PDF</a>
+            <a class="button" href="read_paper.md">打开 `read_paper.md`</a>
           </div>
         </article>
       </div>
 
       <div class="note">
         <strong>说明：</strong><br />
-        这个首页当前列出工作区中可直接访问的 HTML 报告与 PDF。后续新增论文时，可以按同样格式继续往这里添加入口卡片。
-      </div>
-    </section>
-
-    <section id="papers">
-      <h2>2. 原始论文 PDF</h2>
-      <div class="grid">
-        <article class="card">
-          <strong>PEARL 原论文</strong>
-          <p>`PEARL- Personalized Streaming Video Understanding Model.pdf`</p>
-          <div class="actions">
-            <a class="button" href="papers/PEARL-%20Personalized%20Streaming%20Video%20Understanding%20Model.pdf">打开 PDF</a>
-          </div>
-        </article>
-
-        <article class="card">
-          <strong>LongVILA 原论文</strong>
-          <p>`LongVILA Scaling Long-Context Visual Language Models for Long Videos.pdf`</p>
-          <div class="actions">
-            <a class="button" href="papers/LongVILA%20Scaling%20Long-Context%20Visual%20Language%20Models%20for%20Long%20Videos.pdf">打开 PDF</a>
-          </div>
-        </article>
+        这个首页故意保持稳定，不再按论文逐条维护。内容更新集中发生在 `papers/` 目录内部。
       </div>
     </section>
 
     <section id="workflow">
-      <h2>3. 使用方式</h2>
+      <h2>2. 使用方式</h2>
       <ol>
-        <li>先点击某篇论文的 PDF，确认论文原文。</li>
-        <li>再点击对应的 HTML 报告，阅读中文整理版分析。</li>
-        <li>如果要继续生成新的论文报告，可参考下方 `read_paper.md` 的格式要求。</li>
+        <li>先从首页进入 `papers/` 目录。</li>
+        <li>在 `papers/` 里查看具体 PDF、HTML 报告、tutorial 或 QA 页面。</li>
+        <li>如果要继续生成新的论文报告，参考下方 `read_paper.md` 规范。</li>
       </ol>
 
       <div class="warning">
         <strong>注意：</strong><br />
-        `read_paper.md` 里最关键的要求之一，是报告必须单独写清楚训练/测试数据来源、规模、划分与预处理，并在关键结论后标注论文原文位置。
+        GitHub Pages 默认并不总是提供目录列表式浏览。如果你希望 `papers/` 在网页上可直接浏览，
+        最稳妥的做法是后续在 `papers/` 目录内也准备一个自己的 `index.html`。
       </div>
     </section>
 
     <section id="read-paper">
-      <h2>4. read_paper.md 内容</h2>
+      <h2>3. read_paper.md 内容</h2>
       <p>
         下面是当前 `read_paper.md` 的主要内容，方便你直接从首页查看生成规范。
       </p>
