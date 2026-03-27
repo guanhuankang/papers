@@ -3,21 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Paper Reading Hub</title>
+  <title>Marp Paper Hub</title>
   <style>
     :root {
-      --bg: #f5f7fb;
-      --panel: #ffffff;
-      --text: #1f2937;
-      --muted: #667085;
-      --accent: #2563eb;
-      --accent-soft: #dbeafe;
-      --border: #dbe3f0;
-      --shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
-      --note-bg: #eef6ff;
-      --note-border: #60a5fa;
-      --warn-bg: #fff7ed;
-      --warn-border: #fb923c;
+      --ubuntu-orange: #e95420;
+      --ubuntu-orange-dark: #c34113;
+      --ubuntu-aubergine: #2c001e;
+      --ubuntu-aubergine-soft: #5e2750;
+      --ubuntu-ink: #1b1b1b;
+      --ubuntu-muted: #6b7280;
+      --ubuntu-bg: #f7f7f8;
+      --ubuntu-panel: #ffffff;
+      --ubuntu-border: #e5d9d4;
+      --ubuntu-shadow: 0 18px 40px rgba(44, 0, 30, 0.12);
+      --ubuntu-soft: #fff2ec;
     }
 
     * {
@@ -31,13 +30,15 @@
     body {
       margin: 0;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-      background: linear-gradient(180deg, #edf4ff 0%, var(--bg) 240px);
-      color: var(--text);
-      line-height: 1.72;
+      background:
+        radial-gradient(circle at top right, rgba(233, 84, 32, 0.08), transparent 28%),
+        linear-gradient(180deg, #fcfbfb 0%, var(--ubuntu-bg) 100%);
+      color: var(--ubuntu-ink);
+      line-height: 1.7;
     }
 
     a {
-      color: var(--accent);
+      color: var(--ubuntu-orange);
       text-decoration: none;
     }
 
@@ -51,74 +52,99 @@
     }
 
     header {
-      padding: 56px 0 24px;
+      padding: 44px 0 20px;
     }
 
     .hero {
-      background: rgba(255, 255, 255, 0.86);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(219, 227, 240, 0.95);
-      border-radius: 24px;
-      padding: 32px;
-      box-shadow: var(--shadow);
+      background: linear-gradient(135deg, var(--ubuntu-aubergine) 0%, var(--ubuntu-aubergine-soft) 100%);
+      color: #fff;
+      border-radius: 26px;
+      padding: 36px 34px;
+      box-shadow: var(--ubuntu-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -80px auto;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(233, 84, 32, 0.22), transparent 66%);
+      pointer-events: none;
     }
 
     .eyebrow {
       display: inline-block;
-      padding: 6px 10px;
+      padding: 6px 12px;
       border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffd9cb;
       font-size: 13px;
       font-weight: 700;
       letter-spacing: 0.02em;
     }
 
     h1, h2, h3 {
-      line-height: 1.28;
+      line-height: 1.24;
       margin: 0 0 14px;
     }
 
     h1 {
-      margin-top: 14px;
-      font-size: clamp(30px, 4vw, 42px);
+      margin-top: 16px;
+      font-size: clamp(30px, 4vw, 44px);
+      letter-spacing: -0.02em;
     }
 
     h2 {
       font-size: 28px;
+      color: var(--ubuntu-aubergine);
     }
 
     h3 {
-      font-size: 20px;
-      margin-top: 28px;
+      font-size: 19px;
+      color: var(--ubuntu-aubergine);
+      margin-top: 26px;
     }
 
     p {
       margin: 0 0 16px;
     }
 
+    .lead {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.92);
+      max-width: 760px;
+    }
+
+    .meta {
+      margin-top: 14px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 15px;
+    }
+
     nav {
-      margin: 24px 0 36px;
+      margin: 24px 0 32px;
     }
 
     .toc,
     section {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background: var(--ubuntu-panel);
+      border: 1px solid var(--ubuntu-border);
       border-radius: 22px;
-      padding: 28px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 24px rgba(44, 0, 30, 0.06);
     }
 
     .toc {
-      border-radius: 20px;
+      padding: 24px 26px;
     }
 
     .toc ul {
       margin: 0;
       padding-left: 20px;
       columns: 2;
-      column-gap: 32px;
+      column-gap: 36px;
     }
 
     .toc li {
@@ -127,35 +153,25 @@
     }
 
     main {
-      padding-bottom: 56px;
+      padding-bottom: 48px;
     }
 
     section {
-      margin-bottom: 24px;
-    }
-
-    .lead {
-      font-size: 18px;
-      color: #344054;
-    }
-
-    .meta {
-      color: var(--muted);
-      font-size: 15px;
-      margin-top: 16px;
+      padding: 28px;
+      margin-bottom: 22px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 16px;
-      margin-top: 20px;
+      margin-top: 18px;
     }
 
     .card {
-      background: #f8fbff;
-      border: 1px solid var(--border);
-      border-radius: 16px;
+      background: linear-gradient(180deg, #fff 0%, #fff8f5 100%);
+      border: 1px solid var(--ubuntu-border);
+      border-radius: 18px;
       padding: 20px;
     }
 
@@ -163,6 +179,7 @@
       display: block;
       margin-bottom: 8px;
       font-size: 16px;
+      color: var(--ubuntu-aubergine);
     }
 
     .actions {
@@ -173,30 +190,99 @@
     }
 
     .button {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: var(--ubuntu-orange);
+      color: #fff;
       font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.18s ease, transform 0.18s ease;
     }
 
-    .note,
-    .warning {
-      border-left: 5px solid;
-      border-radius: 16px;
-      padding: 16px 18px;
-      margin: 18px 0;
+    .button:hover {
+      background: var(--ubuntu-orange-dark);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .button.secondary {
+      background: transparent;
+      color: var(--ubuntu-orange);
+      border-color: #f2b59d;
+    }
+
+    .button.secondary:hover {
+      background: var(--ubuntu-soft);
+    }
+
+    .terminal {
+      margin-top: 18px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(44, 0, 30, 0.18);
+      box-shadow: 0 12px 28px rgba(44, 0, 30, 0.08);
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      background: #3a2032;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #ff6b57;
+    }
+
+    .dot:nth-child(2) {
+      background: #febc2e;
+    }
+
+    .dot:nth-child(3) {
+      background: #28c840;
+    }
+
+    .terminal-title {
+      margin-left: 8px;
+      color: #f1d6e8;
+      font-size: 13px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px 20px;
+      background: #300a24;
+      color: #f5f5f5;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f5ebe6;
+      color: #7a2e12;
+      padding: 2px 6px;
+      border-radius: 6px;
     }
 
     .note {
-      background: var(--note-bg);
-      border-color: var(--note-border);
-    }
-
-    .warning {
-      background: var(--warn-bg);
-      border-color: var(--warn-border);
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-left: 5px solid var(--ubuntu-orange);
+      background: var(--ubuntu-soft);
+      border-radius: 16px;
     }
 
     ul, ol {
@@ -208,25 +294,9 @@
       margin-bottom: 10px;
     }
 
-    code, pre {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    }
-
-    pre {
-      margin: 18px 0 0;
-      padding: 18px;
-      border-radius: 16px;
-      background: #0f172a;
-      color: #e5eefb;
-      overflow-x: auto;
-      font-size: 14px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
-
     footer {
-      color: var(--muted);
-      padding: 0 0 48px;
+      color: var(--ubuntu-muted);
+      padding: 0 0 42px;
       font-size: 14px;
     }
 
@@ -247,14 +317,14 @@
   <header>
     <div class="container">
       <div class="hero">
-        <span class="eyebrow">Static Portal</span>
-        <h1>Paper Reading Hub</h1>
+        <span class="eyebrow">Ubuntu Style Portal</span>
+        <h1>Marp Paper Hub</h1>
         <p class="lead">
-          这是一个固定入口页，只提供稳定的目录导航，不直接列出具体论文条目。
-          这样你后续只修改 `papers/` 里的内容，而不需要频繁改首页。
+          一个稳定、简洁的论文入口页。首页保持固定风格与导航，后续只需要更新 <code>papers/</code> 目录中的 PDF、HTML 报告、
+          tutorial 或 QA 页面即可。
         </p>
         <p class="meta">
-          适合部署到 GitHub Pages，作为本地论文库和报告库的统一入口。
+          适合 GitHub Pages 部署，首页不承担内容维护，只承担入口与说明。
         </p>
       </div>
     </div>
@@ -264,22 +334,23 @@
     <div class="toc">
       <h2>目录</h2>
       <ul>
-        <li><a href="#entry">1. 入口导航</a></li>
-        <li><a href="#workflow">2. 使用方式</a></li>
-        <li><a href="#read-paper">3. read_paper.md 内容</a></li>
+        <li><a href="#entry">1. 入口</a></li>
+        <li><a href="#directory">2. 当前目录</a></li>
+        <li><a href="#usage">3. 使用方式</a></li>
+        <li><a href="#spec">4. 报告规范</a></li>
       </ul>
     </div>
   </nav>
 
   <main class="container">
     <section id="entry">
-      <h2>1. 入口导航</h2>
+      <h2>1. 入口</h2>
       <div class="grid">
         <article class="card">
-          <strong>`papers/` 目录</strong>
+          <strong>`papers/`</strong>
           <p>
-            进入论文资源目录。后续新增或替换 PDF、HTML 报告、tutorial、QA 页面时，
-            首页无需修改，统一从这里进入。
+            所有论文 PDF、HTML 解读报告、tutorial 和 QA 页面统一放在这里。
+            这是后续唯一需要持续更新的内容目录。
           </p>
           <div class="actions">
             <a class="button" href="papers/">打开 `papers/`</a>
@@ -287,82 +358,100 @@
         </article>
 
         <article class="card">
-          <strong>`read_paper.md` 规范</strong>
+          <strong>`read_paper.md`</strong>
           <p>
-            查看论文报告生成规则，包括连续滚动式 HTML、中文讲解、引用标注和数据溯源要求。
+            论文报告生成规范，包括页面结构、中文讲解方式、引用标注规则，以及重点的数据溯源要求。
           </p>
           <div class="actions">
-            <a class="button" href="read_paper.md">打开 `read_paper.md`</a>
+            <a class="button secondary" href="read_paper.md">打开 `read_paper.md`</a>
           </div>
         </article>
       </div>
 
       <div class="note">
-        <strong>说明：</strong><br />
-        这个首页故意保持稳定，不再按论文逐条维护。内容更新集中发生在 `papers/` 目录内部。
+        <strong>设计原则：</strong><br />
+        首页固定，目录更新在 `papers/` 内部完成。这样部署到 GitHub Pages 后，后续新增论文时不必反复改首页。
       </div>
     </section>
 
-    <section id="workflow">
-      <h2>2. 使用方式</h2>
+    <section id="directory">
+      <h2>2. 当前目录</h2>
+      <p>
+        当前资源目录路径是 <code>/papers/</code>。下面展示的是一个“目录入口视图”，重点是让你知道内容维护集中在这里，
+        而不是在首页里维护一堆单独卡片。
+      </p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="terminal-title">papers directory</span>
+        </div>
+        <pre>$ ls papers/
+LongVILA Scaling Long-Context Visual Language Models for Long Videos.pdf
+PEARL- Personalized Streaming Video Understanding Model.html
+PEARL- Personalized Streaming Video Understanding Model.pdf</pre>
+      </div>
+
+      <div class="actions">
+        <a class="button" href="papers/">进入目录</a>
+      </div>
+    </section>
+
+    <section id="usage">
+      <h2>3. 使用方式</h2>
       <ol>
-        <li>先从首页进入 `papers/` 目录。</li>
-        <li>在 `papers/` 里查看具体 PDF、HTML 报告、tutorial 或 QA 页面。</li>
-        <li>如果要继续生成新的论文报告，参考下方 `read_paper.md` 规范。</li>
+        <li>部署后，从首页直接进入 <code>papers/</code>。</li>
+        <li>后续新增论文、报告、教程时，只修改 <code>papers/</code> 内的内容。</li>
+        <li>如果需要查看报告生成要求，再返回首页打开 <code>read_paper.md</code>。</li>
       </ol>
 
-      <div class="warning">
-        <strong>注意：</strong><br />
-        GitHub Pages 默认并不总是提供目录列表式浏览。如果你希望 `papers/` 在网页上可直接浏览，
-        最稳妥的做法是后续在 `papers/` 目录内也准备一个自己的 `index.html`。
+      <div class="note">
+        <strong>GitHub Pages 提醒：</strong><br />
+        如果你希望 `papers/` 在网页端始终可浏览，最稳妥的做法仍然是在 `papers/` 目录里准备一个自己的 `index.html`。
+        这样首页和子目录页都可以长期稳定不变。
       </div>
     </section>
 
-    <section id="read-paper">
-      <h2>3. read_paper.md 内容</h2>
+    <section id="spec">
+      <h2>4. 报告规范</h2>
       <p>
-        下面是当前 `read_paper.md` 的主要内容，方便你直接从首页查看生成规范。
+        下面保留 `read_paper.md` 的精简说明，方便快速回顾报告应该长什么样。
       </p>
-      <pre># Role
-你是一位学术报告专家兼前端开发工程师。请精读我上传的 PDF 论文，并制作一份结构清晰、内容详实的 连续滚动式 HTML 报告。
 
-# Task
-1. 深入分析论文的核心内容，覆盖背景、方法、实验、结论等方方面面。
-2. 将内容转化为一个独立的、自包含的 HTML 文件（包含内嵌 CSS）。
-3. 页面设计需适合阅读（而非投影），支持上下滚动浏览所有信息。
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="terminal-title">read_paper.md summary</span>
+        </div>
+        <pre># Task
+- 深入分析论文背景、方法、实验、结论
+- 产出单个自包含 HTML 文件
+- 页面应适合阅读，并支持连续滚动
 
-# Content Requirements
-1. 主要解释使用中文，但专业名词、术语、变量名、缩写必须保留原始英文。
-2. 在关键观点、数据、公式或图表描述后，务必标注原文对应的位置。
-3. 内容要全面，逻辑分层清晰，使用 H1 / H2 / H3 标题。
-4. 数据溯源必须单独列出：
-   - 数据集名称及官方链接/引用
-   - 数据规模
-   - 数据采集方式
-   - 数据划分策略
-   - 预处理/增强方法
-   - 多实验场景要分别说明，避免混淆
-   - 若原文未明确说明，要标注“⚠️ 原文未明确”
+# Key requirements
+- 主要用中文解释，术语保留英文
+- 关键观点后标注原文位置
+- 单独写清楚数据来源、规模、划分、预处理
+- 若原文未明确说明，要明确标注
 
-# Layout & Design
-1. 使用语义化 HTML 标签。
-2. 不要用幻灯片分页结构，要做成连续长页面。
-3. 建议顶部添加目录导航。
-4. 主体内容区域应限制最大宽度并居中显示。
-5. 所有 CSS 内嵌，保证离线可用。
+# Output
+- 文件输出到 papers/
+- 文件名与原论文同名（不含扩展名）
+- 所有 CSS 内嵌，适合离线查看</pre>
+      </div>
 
-# Output Format
-1. 输出到 papers/ 文件夹。
-2. 文件名使用原始论文名（不含扩展名）。
-3. 浏览器打开后应直接呈现整洁的文档报告效果。</pre>
       <div class="actions">
-        <a class="button" href="read_paper.md">打开原始 read_paper.md</a>
+        <a class="button secondary" href="read_paper.md">查看完整规范</a>
       </div>
     </section>
   </main>
 
   <footer class="container">
-    Static index saved as `index.html`.
+    `index.html` is intentionally stable. Keep updating `papers/`, not this page.
   </footer>
 </body>
 </html>
